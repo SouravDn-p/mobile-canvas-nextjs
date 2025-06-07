@@ -58,7 +58,7 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`sticky top-0 z-50 w-screen transition-all duration-500 ${
+      className={`sticky top-0 z-50  transition-all duration-500 ${
         scrolled
           ? "bg-white/10 backdrop-blur-2xl border-b border-white/20 shadow-2xl shadow-black/10"
           : "bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900"
@@ -111,6 +111,16 @@ const Navbar = () => {
               All Products
             </Link>
 
+            <Link
+              href="/about"
+              className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 relative ${
+                scrolled
+                  ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
+                  : "text-white hover:bg-white/20 hover:shadow-lg"
+              }`}
+            >
+              About Us
+            </Link>
             <Link
               href="/deals"
               className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 relative ${
@@ -499,6 +509,13 @@ const Navbar = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               All Products
+            </Link>
+            <Link
+              href="/about"
+              className="flex items-center justify-between px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <span>About Us</span>
             </Link>
             <Link
               href="/deals"

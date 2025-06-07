@@ -79,7 +79,7 @@ const ProductCard = ({ product }) => {
     <div className="group relative bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-500 overflow-hidden border border-gray-700 hover:border-indigo-400">
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-50">
-        <Link href={`/products/${product.id}`}>
+        <Link href={`/product/${product.id}`}>
           <div className="relative w-full h-full">
             {!imageLoaded && (
               <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
@@ -158,7 +158,7 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Product Name */}
-        <Link href={`/products/${product.id}`}>
+        <Link href={`/product/${product.id}`}>
           <h3 className="font-bold text-lg text-white mb-2 line-clamp-2 hover:text-indigo-400 transition-colors">
             {product.name}
           </h3>
@@ -759,7 +759,7 @@ export default function Products() {
                   <div
                     className={`grid gap-6 ${
                       viewMode === "grid"
-                        ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+                        ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
                         : "grid-cols-1"
                     }`}
                   >
