@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import getAllProducts from "@/lib/getAllProducts";
@@ -315,7 +315,6 @@ const RelatedProducts = ({ currentProduct, allProducts }) => {
 // Main Product Details Component
 export default function ProductDetails() {
   const { id } = useParams();
-  const router = useRouter();
   const products = getAllProducts();
   const [product, setProduct] = useState(null);
   const [selectedColor, setSelectedColor] = useState(0);
@@ -462,7 +461,7 @@ export default function ProductDetails() {
           {/* Product Images */}
           <div>
             <ImageGallery
-              images={product.images || [product.image]}
+              images={ [product.image]}
               productName={product.name}
             />
           </div>

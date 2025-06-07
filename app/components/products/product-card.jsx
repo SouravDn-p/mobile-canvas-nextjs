@@ -77,7 +77,7 @@ const ProductCard = ({ product }) => {
     <div className="group relative bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl hover:shadow-purple-500/25 transition-all duration-500 overflow-hidden border border-gray-700 hover:border-indigo-400">
       {/* Product Image */}
       <div className="relative aspect-square overflow-hidden bg-gray-50">
-        <Link href={`/products/${product.id}`}>
+        <Link href={`/product/${product.id}`}>
           <div className="relative w-full h-full">
             {!imageLoaded && (
               <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse" />
@@ -97,7 +97,7 @@ const ProductCard = ({ product }) => {
 
             {/* Quick view button */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-              <button className="bg-gradient-to-r from-indigo-500 to-purple-600 backdrop-blur-sm text-white px-6 py-2 rounded-full font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-lg">
+              <button className="cursor-pointer bg-gradient-to-r from-indigo-500 to-purple-600 backdrop-blur-sm text-white px-6 py-2 rounded-full font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 shadow-lg">
                 Quick View
               </button>
             </div>
@@ -113,7 +113,7 @@ const ProductCard = ({ product }) => {
             className={`w-5 h-5 transition-colors ${
               isWishlisted
                 ? "fill-red-500 text-red-500"
-                : "text-gray-600 hover:text-red-500"
+                : "text-gray-300 hover:text-red-500"
             }`}
             fill={isWishlisted ? "currentColor" : "none"}
             stroke="currentColor"
@@ -156,7 +156,7 @@ const ProductCard = ({ product }) => {
         </div>
 
         {/* Product Name */}
-        <Link href={`/products/${product.id}`}>
+        <Link href={`/product/${product.id}`}>
           <h3 className="font-bold text-lg text-white mb-2 line-clamp-2 hover:text-indigo-400 transition-colors">
             {product.name}
           </h3>
@@ -214,7 +214,7 @@ const ProductCard = ({ product }) => {
           <button
             onClick={handleAddToCart}
             disabled={!product.inStock}
-            className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
+            className={`cursor-pointer px-6 py-3 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 ${
               product.inStock
                 ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 shadow-lg hover:shadow-xl"
                 : "bg-gray-700 text-gray-400 cursor-not-allowed border border-gray-600"
@@ -226,7 +226,7 @@ const ProductCard = ({ product }) => {
 
         {/* Free Shipping */}
         {product.price > 50 && (
-          <div className="mt-3 flex items-center text-green-600 text-sm">
+          <div className="mt-3 flex items-center text-green-400 text-sm">
             <svg
               className="w-4 h-4 mr-1"
               fill="none"

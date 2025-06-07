@@ -212,7 +212,7 @@ export default function About() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveSection(tab.id)}
-                    className={`flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                    className={`cursor-pointer flex items-center space-x-2 px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                       activeSection === tab.id
                         ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg"
                         : "text-gray-300 hover:text-white hover:bg-gray-800/50"

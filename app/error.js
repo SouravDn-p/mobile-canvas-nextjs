@@ -35,7 +35,7 @@ export default function Error({ error, reset }) {
   };
 
   return (
-    <div className="h-screen bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 border flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 flex items-center justify-center px-4">
       <div className="text-center space-y-8 max-w-2xl mx-auto">
         {/* Error Icon Animation */}
         <div className="relative">
@@ -100,22 +100,70 @@ export default function Error({ error, reset }) {
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={reset}
-            className="cursor-pointer bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+            className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
           >
             🔄 Try Again
           </button>
           <button
             onClick={handleRefresh}
-            className="cursor-pointer bg-white/10 backdrop-blur-xl text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/20 transition-all duration-300 transform hover:scale-105 shadow-lg border border-white/20"
+            className="bg-white/10 backdrop-blur-xl text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/20 transition-all duration-300 transform hover:scale-105 shadow-lg border border-white/20"
           >
             🔃 Refresh Page
           </button>
           <Link
             href="/"
-            className="cursor-pointer bg-gray-800/50 backdrop-blur-xl text-white px-8 py-4 rounded-xl font-semibold hover:bg-gray-700/50 transition-all duration-300 transform hover:scale-105 shadow-lg border border-gray-600 inline-block text-center"
+            className="bg-gray-800/50 backdrop-blur-xl text-white px-8 py-4 rounded-xl font-semibold hover:bg-gray-700/50 transition-all duration-300 transform hover:scale-105 shadow-lg border border-gray-600 inline-block text-center"
           >
             🏠 Go Home
           </Link>
+        </div>
+
+        {/* Help Section */}
+        <div className="bg-gray-900/30 backdrop-blur-xl rounded-2xl p-6 border border-gray-700">
+          <h3 className="text-xl font-bold text-white mb-4">Need Help?</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+            <button
+              onClick={handleReportError}
+              className="flex flex-col items-center p-4 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 transition-colors border border-gray-600 hover:border-red-500"
+            >
+              <span className="text-2xl mb-2">📧</span>
+              <span className="text-white font-semibold">Report Error</span>
+              <span className="text-gray-400 text-sm">
+                Send error details to our team
+              </span>
+            </button>
+            <Link
+              href="/support"
+              className="flex flex-col items-center p-4 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 transition-colors border border-gray-600 hover:border-blue-500"
+            >
+              <span className="text-2xl mb-2">💬</span>
+              <span className="text-white font-semibold">Contact Support</span>
+              <span className="text-gray-400 text-sm">
+                Get help from our team
+              </span>
+            </Link>
+            <Link
+              href="/status"
+              className="flex flex-col items-center p-4 rounded-xl bg-gray-800/50 hover:bg-gray-700/50 transition-colors border border-gray-600 hover:border-green-500"
+            >
+              <span className="text-2xl mb-2">📊</span>
+              <span className="text-white font-semibold">System Status</span>
+              <span className="text-gray-400 text-sm">
+                Check service availability
+              </span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Quick Tips */}
+        <div className="bg-blue-500/10 backdrop-blur-xl rounded-xl p-4 border border-blue-500/30 max-w-lg mx-auto">
+          <h4 className="text-blue-300 font-semibold mb-2">💡 Quick Tips</h4>
+          <ul className="text-blue-200 text-sm space-y-1 text-left">
+            <li>• Try refreshing the page</li>
+            <li>• Check your internet connection</li>
+            <li>• Clear your browser cache</li>
+            <li>• Try again in a few minutes</li>
+          </ul>
         </div>
       </div>
     </div>

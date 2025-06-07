@@ -136,14 +136,14 @@ const Navbar = () => {
             </Link>
 
             <Link
-              href="/support"
+              href="/blogs"
               className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 ${
                 scrolled
                   ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
                   : "text-white hover:bg-white/20 hover:shadow-lg"
               }`}
             >
-              Support
+              Blog
             </Link>
           </div>
 
@@ -151,7 +151,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-2">
             {/* Notifications */}
             <button
-              className={`hidden sm:flex p-2 rounded-xl relative transition-all duration-300 hover:scale-110 ${
+              className={`cursor-pointer hidden sm:flex p-2 rounded-xl relative transition-all duration-300 hover:scale-110 ${
                 scrolled
                   ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
                   : "text-white hover:bg-white/20"
@@ -179,7 +179,7 @@ const Navbar = () => {
 
             {/* Wishlist */}
             <button
-              className={`hidden sm:flex p-2 rounded-xl relative transition-all duration-300 hover:scale-110 ${
+              className={`hidden sm:flex p-2 rounded-xl cursor-pointer relative transition-all duration-300 hover:scale-110 ${
                 scrolled
                   ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
                   : "text-white hover:bg-white/20"
@@ -209,7 +209,7 @@ const Navbar = () => {
             {/* Cart */}
             <div className="relative">
               <button
-                className={`p-2 rounded-xl relative transition-all duration-300 hover:scale-110 ${
+                className={`p-2 cursor-pointer rounded-xl relative transition-all duration-300 hover:scale-110 ${
                   scrolled
                     ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
                     : "text-white hover:bg-white/20"
@@ -269,7 +269,7 @@ const Navbar = () => {
                               ${item.price}
                             </div>
                           </div>
-                          <button className="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 transition-colors">
+                          <button className="cursor-pointer text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 transition-colors">
                             <svg
                               className="w-4 h-4"
                               fill="none"
@@ -294,7 +294,7 @@ const Navbar = () => {
                         </span>
                       </div>
                       <button
-                        className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                        className=" cursor-pointer w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
                         onClick={() => {
                           router.push("/cart");
                           setIsCartOpen(false);
@@ -311,7 +311,7 @@ const Navbar = () => {
             {/* User Menu */}
             <div className="relative">
               <button
-                className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
+                className={` cursor-pointer p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
                   scrolled
                     ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
                     : "text-white hover:bg-white/20"
@@ -335,12 +335,12 @@ const Navbar = () => {
 
               {/* User Dropdown */}
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50">
+                <div className=" absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50">
                   <div className="p-2">
                     {isAuthenticated ? (
                       <>
                         <button
-                          className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-3"
+                          className="cursor-pointer w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-3"
                           onClick={() => {
                             router.push("/profile");
                             setIsUserMenuOpen(false);
@@ -364,7 +364,7 @@ const Navbar = () => {
                           </span>
                         </button>
                         <button
-                          className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-3"
+                          className="cursor-pointer w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-3"
                           onClick={() => {
                             router.push("/orders");
                             setIsUserMenuOpen(false);
@@ -389,7 +389,7 @@ const Navbar = () => {
                         </button>
 
                         <button
-                          className="w-full text-left px-4 py-3 rounded-xl hover:bg-red-50 transition-colors flex items-center space-x-3 text-red-600"
+                          className="cursor-pointer  w-full text-left px-4 py-3 rounded-xl hover:bg-red-50 transition-colors flex items-center space-x-3 text-red-600"
                           onClick={() => {
                             setIsAuthenticated(false);
                             setIsUserMenuOpen(false);
@@ -414,9 +414,9 @@ const Navbar = () => {
                     ) : (
                       <>
                         <button
-                          className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-3"
+                          className="cursor-pointer  w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-3"
                           onClick={() => {
-                            router.push("/login");
+                            router.push("/api/auth/login");
                             setIsUserMenuOpen(false);
                           }}
                         >
@@ -438,9 +438,9 @@ const Navbar = () => {
                           </span>
                         </button>
                         <button
-                          className="w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-3"
+                          className="cursor-pointer  w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-3"
                           onClick={() => {
-                            router.push("/register");
+                            router.push("/api/auth/register");
                             setIsUserMenuOpen(false);
                           }}
                         >
@@ -470,7 +470,7 @@ const Navbar = () => {
 
             {/* Mobile Menu Button */}
             <button
-              className={`lg:hidden p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
+              className={`lg:hidden p-2 rounded-xl cursor-pointer transition-all duration-300 hover:scale-110 ${
                 scrolled
                   ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
                   : "text-white hover:bg-white/20"
@@ -501,25 +501,25 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       {isMenuOpen && (
-        <div className="lg:hidden border-t border-white/20">
+        <div className="lg:hidden border-t  border-white/20">
           <div className="px-4 py-6 space-y-2 bg-black/20 backdrop-blur-xl">
             <Link
               href="/product"
-              className="block px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
+              className="block cursor-pointer px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
               All Products
             </Link>
             <Link
               href="/about"
-              className="flex items-center justify-between px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
+              className="flex items-center cursor-pointer justify-between px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
               <span>About Us</span>
             </Link>
             <Link
               href="/deals"
-              className="flex items-center justify-between px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
+              className="flex cursor-pointer items-center justify-between px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
               <span>Hot Deals</span>
@@ -529,11 +529,11 @@ const Navbar = () => {
             </Link>
 
             <Link
-              href="/support"
-              className="block px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
+              href="/blogs"
+              className="block cursor-pointer px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
               onClick={() => setIsMenuOpen(false)}
             >
-              Support
+              Blog
             </Link>
           </div>
         </div>
