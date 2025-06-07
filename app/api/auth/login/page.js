@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import logo from "@/public/logo.jpg";
 
 export default function Login() {
   const router = useRouter();
@@ -71,23 +72,34 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-indigo-950 to-purple-950 flex items-center justify-center px-4 py-8">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br relative h-[130vh] from-gray-900 via-indigo-950 to-purple-950 flex items-center justify-center px-4 py-8">
+      <Image
+        src="/logos/auth.jpeg"
+        alt="Auth Background"
+        layout="fill"
+        objectFit="cover"
+        priority
+      />
+      <div className="absolute inset-0 bg-black/70"></div>
+      <div className="absolute inset-0 bg-gradient-to-b from-black/90 via-black/40 to-black/80"></div>
+
+      <div className="w-full max-w-2xl  absolute top-4 inset-0 md:left-4/15 flex flex-col  items-center  justify-center">
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center  mb-8">
           <Link href="/" className="inline-flex items-center space-x-3 group">
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity"></div>
-              <div className="relative bg-white rounded-xl p-3 shadow-lg">
+              <div className="relative bg-white rounded-xl  shadow-lg">
                 <Image
-                  src="/placeholder.svg?height=40&width=40"
+                  src={logo}
                   alt="Mobile Canvas Logo"
-                  width={40}
-                  height={40}
+                  width={60}
+                  height={60}
                   className="rounded-lg"
                 />
               </div>
             </div>
+
             <div className="text-left">
               <div className="text-2xl font-bold text-white">Mobile Canvas</div>
               <div className="text-sm text-indigo-300">Tech & Beyond</div>
@@ -96,7 +108,7 @@ export default function Login() {
         </div>
 
         {/* Login Form */}
-        <div className="bg-gray-900/80 backdrop-blur-xl rounded-2xl shadow-2xl border border-gray-700 p-8">
+        <div className="bg-transparent w-full md:w-2/3 backdrop-blur-2xl rounded-2xl shadow-2xl border border-gray-700 p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
             <p className="text-gray-300">Sign in to your account to continue</p>
