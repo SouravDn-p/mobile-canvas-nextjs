@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import hero from "@/public/logos/hero1.png";
 import { useEffect, useRef, useState } from "react";
+import Button from "../ui/button";
+import { ArrowRight } from "lucide-react";
 
 const Hero = () => {
   const heroRef = useRef(null);
@@ -52,7 +54,7 @@ const Hero = () => {
 
   return (
     <div
-      className="relative w-screen h-screen bg-gray-900 overflow-hidden"
+      className="relative  h-screen bg-gray-900 overflow-hidden "
       ref={heroRef}
     >
       {/* Background Banner Image with Overlays */}
@@ -111,45 +113,26 @@ const Hero = () => {
             </p>
 
             {/* CTA Buttons */}
-            <div className="mt-10 flex justify-center gap-4 flex-wrap">
-              <Link
-                href="/products"
-                className="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-all transform hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/50 group"
+            <div className="mt-10 flex justify-center gap-4 flex-wrap ">
+              <Button
+                size="lg"
+                className={`bg-gradient-to-r cursor-pointer  hover:scale-105 transition-all duration-300 text-white font-semibold `}
               >
-                Shop Now
-                <svg
-                  className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </Link>
-              <Link
-                href="/products/phones"
-                className="inline-flex items-center px-8 py-4 bg-gray-900/50 backdrop-blur-sm text-white border border-gray-500/30 font-medium rounded-lg hover:bg-gray-800/50 transition-all transform hover:-translate-y-1"
+                <Link href="/products" className="flex">
+                  Shop Now
+                  <ArrowRight className="ml-2 h-4 w-4 mt-0.5" />
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="border-white/30 text-white hover:bg-white/10 cursor-pointer"
               >
-                Browse Phones
-                <svg
-                  className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </Link>
+                <Link href="/products/phones" className="flex ">
+                  Browse Phones
+                  <ArrowRight className="ml-2 h-4 w-4 mt-0.5" />
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
