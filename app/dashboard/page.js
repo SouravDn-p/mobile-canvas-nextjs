@@ -311,16 +311,16 @@ export default function DashboardPage() {
                     onClick={() =>
                       isEditing ? handleSaveProfile() : setIsEditing(true)
                     }
-                    className="bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-black"
+                    className="bg-gradient-to-r cursor-pointer from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-black"
                   >
                     {isEditing ? (
                       <>
-                        <Save className="mr-2 h-4 w-4" />
+                        <Save className="mr-2 h-4 w-4 cursor-pointer" />
                         Save
                       </>
                     ) : (
                       <>
-                        <Edit className="mr-2 h-4 w-4" />
+                        <Edit className="mr-2 h-4 w-4 cursor-pointer" />
                         Edit
                       </>
                     )}

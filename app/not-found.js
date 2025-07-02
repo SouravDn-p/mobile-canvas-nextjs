@@ -48,21 +48,6 @@ const NotFoundPage = () => {
             </p>
           </div>
 
-          {/* Search Suggestion */}
-          <div className="mb-12 p-6 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 max-w-md mx-auto">
-            <div className="flex items-center justify-center space-x-3 mb-4">
-              <Search className="h-6 w-6 text-blue-400" />
-              <span className="text-gray-300 font-medium">
-                Quick Suggestions
-              </span>
-            </div>
-            <div className="space-y-2 text-sm text-gray-400">
-              <p>• Check the URL for typos</p>
-              <p>• Return to the homepage</p>
-              <p>• Use the navigation menu</p>
-            </div>
-          </div>
-
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link href={"http://localhost:3000/"}>

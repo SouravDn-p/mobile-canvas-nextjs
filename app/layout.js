@@ -5,6 +5,7 @@ import SessionWrapper from "./components/SessionWrapper";
 import Footer from "./components/shared/Footer";
 import ClientProvider from "./components/ClientProvider";
 import TestNavbar from "./components/shared/TestNavbar";
+import Navbar from "./components/shared/Navbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,7 +21,8 @@ export default function RootLayout({ children }) {
         <SessionWrapper>
           <ClientProvider>
             <div className="min-h-screen flex flex-col">
-              <TestNavbar />
+              {/* <TestNavbar /> */}
+              <Navbar />
               <main className="flex-1">{children}</main>
               <Footer />
             </div>

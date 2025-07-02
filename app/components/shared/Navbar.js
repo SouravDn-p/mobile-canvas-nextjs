@@ -1,23 +1,40 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
+import {
+  Home,
+  ShoppingCart,
+  BarChart3,
+  LogIn,
+  UserPlus,
+  Menu,
+  X,
+  User,
+  ChevronDown,
+  Settings,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import logo from "@/public/logo.jpg";
+import Image from "next/image";
+import { signOut, useSession } from "next-auth/react";
+import { MdOutlineDashboard, MdOutlineLogout } from "react-icons/md";
+import { BiMoney } from "react-icons/bi";
+import { FaUserCircle } from "react-icons/fa";
 
-const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [cartItemsCount, setCartItemsCount] = useState(3);
-  const [wishlistCount, setWishlistCount] = useState(2);
-  const [notificationCount, setNotificationCount] = useState(2);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+export default function Navbar() {
+  const pathname = usePathname();
   const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const isDarkMode = true;
+
+  const { data: session, status } = useSession();
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
 
   // Handle scroll effect
   useEffect(() => {
@@ -28,64 +45,74 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleCategoryClick = (category) => {
-    router.push(`/products/${category}`);
-    setIsMenuOpen(false);
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isUserMenuOpen && !event.target.closest(".user-dropdown")) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isUserMenuOpen]);
+
+  const isActive = (path) => {
+    return pathname === path;
   };
 
-  const cartItems = [
+  const navLinks = [
+    { href: "/", label: "Home", icon: Home },
+    { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
+    { href: "/products", label: "Products", icon: ShoppingCart },
+    { href: "/profile", label: "Profile", icon: User },
+  ];
+
+  const userMenuItems = [
     {
-      id: 1,
-      name: "iPhone 15 Pro",
-      price: 999,
-      image: "/placeholder.svg?height=50&width=50",
+      to: "/profile",
+      icon: <FaUserCircle className="w-4 h-4" />,
+      label: "Your Profile",
     },
     {
-      id: 2,
-      name: "MacBook Air",
-      price: 1299,
-      image: "/placeholder.svg?height=50&width=50",
+      to: "/dashboard",
+      icon: <MdOutlineDashboard className="w-4 h-4" />,
+      label: "Dashboard",
     },
     {
-      id: 3,
-      name: "AirPods Pro",
-      price: 249,
-      image: "/placeholder.svg?height=50&width=50",
+      to: "/dashboard/walletHistory",
+      icon: <BiMoney className="w-4 h-4" />,
+      label: "Wallet History",
+    },
+    {
+      to: "/settings",
+      icon: <Settings className="w-4 h-4" />,
+      label: "Settings",
     },
   ];
 
-  const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0);
-
   return (
-    <nav
-      className={`sticky top-0 z-50  transition-all duration-500 ${
-        scrolled
-          ? "bg-white/10 backdrop-blur-2xl border-b border-white/20 shadow-2xl shadow-black/10"
-          : "bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900"
-      }`}
-    >
+    <nav className="bg-gray-900/95 backdrop-blur-sm shadow-2xl border-b border-gray-700/50 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-3 group">
+          <Link
+            href="/"
+            className="flex items-center space-x-2 hover:opacity-80 transition-all duration-300 group"
+          >
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-xl blur-sm opacity-75 group-hover:opacity-100 group-hover:blur-md transition-all duration-300 animate-pulse"></div>
-              <div className="relative bg-white rounded-xl shadow-lg">
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 group-hover:from-blue-700 group-hover:to-purple-700 transition-all duration-300 rounded-xl p-1">
                 <Image
-                  src={logo}
+                  src={logo || "/placeholder.svg"}
                   alt="Mobile Canvas Logo"
                   width={40}
                   height={40}
-                  className="rounded-lg"
+                  className="rounded-lg cursor-pointer"
                 />
               </div>
             </div>
             <div className="flex flex-col">
-              <span
-                className={`font-bold text-xl tracking-tight transition-all duration-300 ${
-                  scrolled ? "text-white drop-shadow-lg" : "text-white"
-                }`}
-              >
+              <span className="text-xl tracking-tight transition-all duration-300 font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 Mobile Canvas
               </span>
               <span
@@ -99,447 +126,281 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex lg:items-center lg:space-x-1">
-            <Link
-              href="/product"
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 ${
-                scrolled
-                  ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
-                  : "text-white hover:bg-white/20 hover:shadow-lg"
-              }`}
-            >
-              All Products
-            </Link>
-
-            <Link
-              href="/about"
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 relative ${
-                scrolled
-                  ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
-                  : "text-white hover:bg-white/20 hover:shadow-lg"
-              }`}
-            >
-              About Us
-            </Link>
-            <Link
-              href="/deals"
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 relative ${
-                scrolled
-                  ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
-                  : "text-white hover:bg-white/20 hover:shadow-lg"
-              }`}
-            >
-              Hot Deals
-              <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full animate-bounce">
-                New
-              </span>
-            </Link>
-
-            <Link
-              href="/blogs"
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 ${
-                scrolled
-                  ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
-                  : "text-white hover:bg-white/20 hover:shadow-lg"
-              }`}
-            >
-              Blog
-            </Link>
+          <div className="hidden md:flex items-center space-x-1">
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`relative flex items-center space-x-2 px-4 py-2 rounded-xl transition-all duration-300 group ${
+                    isActive(link.href)
+                      ? "text-blue-300"
+                      : "text-gray-300 hover:text-white"
+                  }`}
+                >
+                  {isActive(link.href) && (
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-xl border border-blue-500/30" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600/0 to-purple-600/0 group-hover:from-blue-600/10 group-hover:to-purple-600/10 rounded-xl transition-all duration-300" />
+                  <Icon className="h-4 w-4 relative z-10" />
+                  <span className="font-medium relative z-10">
+                    {link.label}
+                  </span>
+                </Link>
+              );
+            })}
           </div>
 
-          {/* Right Side Actions */}
-          <div className="flex items-center space-x-2">
-            {/* Notifications */}
-            <button
-              className={`cursor-pointer hidden sm:flex p-2 rounded-xl relative transition-all duration-300 hover:scale-110 ${
-                scrolled
-                  ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
-                  : "text-white hover:bg-white/20"
-              }`}
-            >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 17h5l-5 5v-5zM10.07 2.82l3.93 3.93-3.93 3.93-3.93-3.93 3.93-3.93z"
-                />
-              </svg>
-              {notificationCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full animate-pulse">
-                  {notificationCount}
-                </span>
-              )}
-            </button>
-
-            {/* Wishlist */}
-            <button
-              className={`hidden sm:flex p-2 rounded-xl cursor-pointer relative transition-all duration-300 hover:scale-110 ${
-                scrolled
-                  ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
-                  : "text-white hover:bg-white/20"
-              }`}
-              onClick={() => router.push("/wishlist")}
-            >
-              <svg
-                className="h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
-              {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-gradient-to-r from-pink-500 to-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
-                  {wishlistCount}
-                </span>
-              )}
-            </button>
-
-            {/* Cart */}
-            <div className="relative">
-              <button
-                className={`p-2 cursor-pointer rounded-xl relative transition-all duration-300 hover:scale-110 ${
-                  scrolled
-                    ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
-                    : "text-white hover:bg-white/20"
-                }`}
-                onClick={() => setIsCartOpen(!isCartOpen)}
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l-2.5 5m0 0h14M7 13h10"
-                  />
-                </svg>
-                {cartItemsCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center animate-pulse">
-                    {cartItemsCount}
-                  </span>
-                )}
-              </button>
-
-              {/* Cart Dropdown */}
-              {isCartOpen && (
-                <div className="absolute right-0 mt-2 w-96 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50">
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-bold text-lg text-gray-800">
-                        Shopping Cart
-                      </h3>
-                      <span className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm px-3 py-1 rounded-full">
-                        {cartItemsCount} items
-                      </span>
+          {/* Desktop Auth Buttons */}
+          <div className="hidden md:flex items-center space-x-3">
+            {!session?.user?.email ? (
+              <>
+                <Link href="/login">
+                  <button className="flex items-center cursor-pointer space-x-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all duration-300 group">
+                    <LogIn className="h-4 w-4" />
+                    <span>Login</span>
+                  </button>
+                </Link>
+                <Link href="/register">
+                  <button className="relative flex items-center cursor-pointer space-x-2 px-4 py-2 rounded-xl transition-all duration-300 group overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:from-blue-700 group-hover:to-purple-700 transition-all duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-purple-600/80 blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300" />
+                    <UserPlus className="h-4 w-4 relative z-10 text-white" />
+                    <span className="relative z-10 text-white font-medium">
+                      Register
+                    </span>
+                  </button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <div className="relative user-dropdown">
+                  <button
+                    className="flex items-center space-x-3 p-1 rounded-xl transition-all duration-300 hover:bg-gray-800/50 group"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsUserMenuOpen(!isUserMenuOpen);
+                    }}
+                  >
+                    <div className="relative cursor-pointer">
+                      <div className="absolute cursor-pointer inset-0 bg-gradient-to-r from-pink-500 to-purple-400 rounded-full blur-sm opacity-75 group-hover:opacity-100 transition-opacity duration-300" />
+                      <Image
+                        src={
+                          session?.user?.image ||
+                          "https://i.ibb.co/Y75m1Mk9/Final-Boss.jpg" ||
+                          "/placeholder.svg" ||
+                          "/placeholder.svg"
+                        }
+                        alt="Profile"
+                        width={36}
+                        height={36}
+                        className=" relative w-9 h-9 rounded-full border-2 border-pink-400 group-hover:border-purple-400 transition-all duration-300 cursor-pointer"
+                      />
                     </div>
-                    <div className="space-y-4 max-h-64 overflow-y-auto">
-                      {cartItems.map((item) => (
-                        <div
-                          key={item.id}
-                          className="flex items-center space-x-4 p-3 rounded-xl hover:bg-gray-50 transition-colors"
-                        >
-                          <Image
-                            src={item.image || "/placeholder.svg"}
-                            alt={item.name}
-                            width={50}
-                            height={50}
-                            className="rounded-lg shadow-md"
-                          />
-                          <div className="flex-1">
-                            <div className="font-semibold text-gray-800">
-                              {item.name}
-                            </div>
-                            <div className="text-indigo-600 font-bold">
-                              ${item.price}
+                    <div className="hidden lg:block text-left cursor-pointer">
+                      <p className="text-white font-medium text-sm">
+                        {session.user?.name || "User"}
+                      </p>
+                      <p className="text-gray-400 text-xs truncate max-w-32">
+                        {session.user?.email}
+                      </p>
+                    </div>
+                    <ChevronDown
+                      className={`h-4 w-4 text-gray-400 transition-transform duration-300 ${
+                        isUserMenuOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+
+                  {/* User Dropdown Menu */}
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-64 rounded-2xl overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
+                      <div className="bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 shadow-2xl shadow-purple-500/10">
+                        {/* User Info Header */}
+                        <div className="px-4 py-3 border-b border-gray-700/50 bg-gradient-to-r from-blue-600/10 to-purple-600/10">
+                          <div className="flex items-center space-x-3">
+                            <Image
+                              src={
+                                session?.user?.image ||
+                                "https://i.ibb.co/Y75m1Mk9/Final-Boss.jpg" ||
+                                "/placeholder.svg" ||
+                                "/placeholder.svg"
+                              }
+                              alt="Profile"
+                              width={40}
+                              height={40}
+                              className="w-10 h-10 rounded-full border-2 border-purple-500/50"
+                            />
+                            <div>
+                              <p className="font-semibold text-sm text-white">
+                                {session.user?.name || "User"}
+                              </p>
+                              <p className="text-xs truncate text-blue-300">
+                                {session.user?.email}
+                              </p>
                             </div>
                           </div>
-                          <button className="cursor-pointer text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 transition-colors">
-                            <svg
-                              className="w-4 h-4"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
+                        </div>
+
+                        {/* Menu Items */}
+                        <div className="p-2">
+                          {userMenuItems.map((item, index) => (
+                            <Link
+                              key={index}
+                              href={item.to}
+                              className="flex items-center gap-3 py-3 px-4 transition-all duration-200 relative overflow-hidden text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 rounded-xl group"
+                              onClick={() => setIsUserMenuOpen(false)}
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                              />
-                            </svg>
+                              <span className="text-blue-300 group-hover:text-purple-400 transition-all duration-300">
+                                {item.icon}
+                              </span>
+                              <span className="relative z-10 font-medium">
+                                {item.label}
+                              </span>
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-transparent hover:from-pink-500/5 hover:to-purple-400/5 transition-all duration-200 opacity-0 hover:opacity-100"></div>
+                            </Link>
+                          ))}
+                        </div>
+
+                        {/* Logout Section */}
+                        <div className="p-2 border-t border-gray-700/50">
+                          <button
+                            onClick={() => {
+                              signOut();
+                              setIsUserMenuOpen(false);
+                            }}
+                            className="w-full flex items-center gap-3 py-3 px-4 transition-all duration-200 relative overflow-hidden text-red-400 hover:text-red-300 hover:bg-red-600/20 rounded-xl group"
+                          >
+                            <MdOutlineLogout className="w-4 h-4" />
+                            <span className="relative z-10 font-medium">
+                              Logout
+                            </span>
                           </button>
                         </div>
-                      ))}
-                    </div>
-                    <div className="border-t border-gray-200 mt-4 pt-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="font-bold text-lg text-gray-800">
-                          Total: ${totalPrice.toLocaleString()}
-                        </span>
                       </div>
-                      <button
-                        className=" cursor-pointer w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg"
-                        onClick={() => {
-                          router.push("/cart");
-                          setIsCartOpen(false);
-                        }}
-                      >
-                        View Cart & Checkout
-                      </button>
                     </div>
-                  </div>
+                  )}
                 </div>
-              )}
-            </div>
+              </>
+            )}
+          </div>
 
-            {/* User Menu */}
-            <div className="relative">
-              <button
-                className={` cursor-pointer p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
-                  scrolled
-                    ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
-                    : "text-white hover:bg-white/20"
-                }`}
-                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
-              </button>
-
-              {/* User Dropdown */}
-              {isUserMenuOpen && (
-                <div className=" absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 z-50">
-                  <div className="p-2">
-                    {isAuthenticated ? (
-                      <>
-                        <button
-                          className="cursor-pointer w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-3"
-                          onClick={() => {
-                            router.push("/profile");
-                            setIsUserMenuOpen(false);
-                          }}
-                        >
-                          <svg
-                            className="w-4 h-4 text-gray-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                            />
-                          </svg>
-                          <span className="font-medium text-gray-700">
-                            My Profile
-                          </span>
-                        </button>
-                        <button
-                          className="cursor-pointer w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-3"
-                          onClick={() => {
-                            router.push("/orders");
-                            setIsUserMenuOpen(false);
-                          }}
-                        >
-                          <svg
-                            className="w-4 h-4 text-gray-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-                            />
-                          </svg>
-                          <span className="font-medium text-gray-700">
-                            My Orders
-                          </span>
-                        </button>
-
-                        <button
-                          className="cursor-pointer  w-full text-left px-4 py-3 rounded-xl hover:bg-red-50 transition-colors flex items-center space-x-3 text-red-600"
-                          onClick={() => {
-                            setIsAuthenticated(false);
-                            setIsUserMenuOpen(false);
-                          }}
-                        >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                            />
-                          </svg>
-                          <span className="font-medium">Logout</span>
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          className="cursor-pointer  w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-3"
-                          onClick={() => {
-                            router.push("/api/auth/login");
-                            setIsUserMenuOpen(false);
-                          }}
-                        >
-                          <svg
-                            className="w-4 h-4 text-gray-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                            />
-                          </svg>
-                          <span className="font-medium text-gray-700">
-                            Sign In
-                          </span>
-                        </button>
-                        <button
-                          className="cursor-pointer  w-full text-left px-4 py-3 rounded-xl hover:bg-gray-50 transition-colors flex items-center space-x-3"
-                          onClick={() => {
-                            router.push("/api/auth/register");
-                            setIsUserMenuOpen(false);
-                          }}
-                        >
-                          <svg
-                            className="w-4 h-4 text-gray-500"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                            />
-                          </svg>
-                          <span className="font-medium text-gray-700">
-                            Sign Up
-                          </span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Mobile Menu Button */}
+          {/* Mobile menu button */}
+          <div className="md:hidden">
             <button
-              className={`lg:hidden p-2 rounded-xl cursor-pointer transition-all duration-300 hover:scale-110 ${
-                scrolled
-                  ? "text-white hover:bg-white/20 hover:shadow-lg hover:backdrop-blur-xl"
-                  : "text-white hover:bg-white/20"
-              }`}
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={toggleMenu}
+              className="text-gray-300 hover:text-white focus:outline-none focus:text-white transition-colors duration-300 p-2 rounded-lg hover:bg-gray-800/50 cursor-pointer"
             >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d={
-                    isMenuOpen
-                      ? "M6 18L18 6M6 6l12 12"
-                      : "M4 6h16M4 12h16M4 18h16"
-                  }
-                />
-              </svg>
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Menu */}
-      {isMenuOpen && (
-        <div className="lg:hidden border-t  border-white/20">
-          <div className="px-4 py-6 space-y-2 bg-black/20 backdrop-blur-xl">
-            <Link
-              href="/product"
-              className="block cursor-pointer px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              All Products
-            </Link>
-            <Link
-              href="/about"
-              className="flex items-center cursor-pointer justify-between px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <span>About Us</span>
-            </Link>
-            <Link
-              href="/deals"
-              className="flex cursor-pointer items-center justify-between px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <span>Hot Deals</span>
-              <span className="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs px-2 py-1 rounded-full">
-                New
-              </span>
-            </Link>
+        {/* Mobile Navigation Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden border-t border-gray-700/50 mt-2 animate-in slide-in-from-top-2 duration-200">
+            <div className="px-2 pt-2 pb-3 space-y-1 bg-gray-900/50 backdrop-blur-sm rounded-b-2xl">
+              {navLinks.map((link) => {
+                const Icon = link.icon;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center space-x-3 px-3 py-3 rounded-xl transition-all duration-300 ${
+                      isActive(link.href)
+                        ? "bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-blue-300 border border-blue-500/30"
+                        : "text-gray-300 hover:text-white hover:bg-gray-800/50"
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Icon className="h-5 w-5" />
+                    <span className="font-medium">{link.label}</span>
+                  </Link>
+                );
+              })}
 
-            <Link
-              href="/blogs"
-              className="block cursor-pointer px-4 py-3 rounded-xl text-white hover:bg-white/20 transition-all duration-300 font-medium"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Blog
-            </Link>
+              <div className="border-t border-gray-700/50 pt-3 mt-3">
+                {!session?.user?.email ? (
+                  <>
+                    <Link
+                      href="/login"
+                      className="flex items-center space-x-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all duration-300"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <LogIn className="h-5 w-5" />
+                      <span>Login</span>
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="flex items-center cursor-pointer space-x-3 px-3 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all duration-300 mt-2 shadow-lg"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <UserPlus className="h-5 w-5" />
+                      <span>Register</span>
+                    </Link>
+                  </>
+                ) : (
+                  <div className="space-y-2">
+                    {/* Mobile User Info */}
+                    <div className="flex items-center space-x-3 px-3 py-3 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-xl border border-gray-700/50">
+                      <Image
+                        src={
+                          session?.user?.image ||
+                          "https://i.ibb.co/Y75m1Mk9/Final-Boss.jpg" ||
+                          "/placeholder.svg" ||
+                          "/placeholder.svg"
+                        }
+                        alt="Profile"
+                        width={32}
+                        height={32}
+                        className="w-8 h-8 rounded-full border border-purple-500/50"
+                      />
+                      <div>
+                        <p className="text-white font-medium text-sm">
+                          {session.user?.name || "User"}
+                        </p>
+                        <p className="text-gray-400 text-xs">
+                          {session.user?.email}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Mobile User Menu Items */}
+                    {userMenuItems.map((item, index) => (
+                      <Link
+                        key={index}
+                        href={item.to}
+                        className="flex items-center space-x-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 rounded-xl transition-all duration-300"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <span className="text-blue-300">{item.icon}</span>
+                        <span>{item.label}</span>
+                      </Link>
+                    ))}
+
+                    {/* Mobile Logout */}
+                    <button
+                      onClick={() => {
+                        signOut();
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center space-x-3 px-3 py-3 text-red-400 hover:text-red-300 hover:bg-red-600/20 rounded-xl transition-all duration-300"
+                    >
+                      <MdOutlineLogout className="w-4 h-4" />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </nav>
   );
-};
-
-export default Navbar;
+}
