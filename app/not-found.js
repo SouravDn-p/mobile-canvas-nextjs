@@ -42,15 +42,15 @@ const NotFoundPage = () => {
               Oops! Page Not Found
             </h2>
             <p className="text-xl text-gray-300 leading-relaxed max-w-lg mx-auto">
-              The page you&aposre looking for seems to have vanished into the
-              digital void. Don&apost worry, even the best explorers sometimes
+              The page you&apos;re looking for seems to have vanished into the
+              digital void. Don&apos;t worry, even the best explorers sometimes
               take a wrong turn.
             </p>
           </div>
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href={"http://localhost:3000/"}>
+            <Link href={"/"}>
               <button className="group bg-gradient-to-r cursor-pointer from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 flex items-center space-x-3">
                 <Home className="h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
                 <span>Back to Home</span>
