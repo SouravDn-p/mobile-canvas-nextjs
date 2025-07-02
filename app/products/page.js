@@ -7,6 +7,7 @@ import Link from "next/link";
 import getAllProducts from "@/lib/getAllProducts";
 import ProductCard from "../components/products/product-card";
 import FilterSidebar from "../components/products/filter-sidebar";
+import { ArrowRight, Home } from "lucide-react";
 
 const categories = [
   { id: "phones", name: "Smartphones", icon: "📱" },
@@ -149,7 +150,7 @@ export default function Products() {
                 {currentCategory ? (
                   <span className="flex items-center">
                     <span className="mr-3 text-5xl">
-                      {currentCategory.icon}
+                      {currentCategory?.icon}
                     </span>
                     {currentCategory.name}
                   </span>
@@ -202,9 +203,9 @@ export default function Products() {
                       {filteredProducts.length !== 1 ? "s" : ""}
                       {searchTerm && (
                         <span>
-                          {" "}
-                          for "
-                          <span className="font-semibold">{searchTerm}</span>"
+                          for &apos;
+                          <span className="font-semibold">{searchTerm}</span>
+                          &apos;
                         </span>
                       )}
                     </>
@@ -303,8 +304,8 @@ export default function Products() {
                       No products found
                     </h3>
                     <p className="text-gray-300 text-lg mb-8 max-w-md mx-auto">
-                      We couldn't find any products matching your criteria. Try
-                      adjusting your filters or search terms.
+                      We couldn&apos;t find any products matching your criteria.
+                      Try adjusting your filters or search terms.
                     </p>
                     <button
                       onClick={handleClearFilters}

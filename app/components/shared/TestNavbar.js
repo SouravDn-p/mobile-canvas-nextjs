@@ -16,11 +16,14 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import logo from "@/public/logo.jpg";
 import Image from "next/image";
+import { signOut, useSession } from "next-auth/react";
 
 export default function TestNavbar() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { data: session, status } = useSession();
+
   // if (status === "loading") {
   //   return <Loading />;
   // }
@@ -106,18 +109,52 @@ export default function TestNavbar() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            <Link href="/login">
-              <button className="flex items-center cursor-pointer space-x-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all duration-300">
-                <LogIn className="h-4 w-4" />
-                <span>Login</span>
-              </button>
-            </Link>
-            <Link href="/register">
-              <button className="flex items-center cursor-pointer space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
-                <UserPlus className="h-4 w-4" />
-                <span>Register</span>
-              </button>
-            </Link>
+            {!session?.user?.email ? (
+              <>
+                <Link href="/login">
+                  <button className="flex items-center cursor-pointer space-x-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all duration-300">
+                    <LogIn className="h-4 w-4" />
+                    <span>Login</span>
+                  </button>
+                </Link>
+                <Link href="/register">
+                  <button className="flex items-center cursor-pointer space-x-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                    <UserPlus className="h-4 w-4" />
+                    <span>Register</span>
+                  </button>
+                </Link>
+              </>
+            ) : (
+              <>
+                {/* Optional: show email or user name */}
+                {/* <div className="text-gray-200 px-2">
+                  Hello, {session.user.email}
+                </div> */}
+
+                <button className="flex items-center justify-center p-1 rounded-full transition-all duration-300 hover:scale-110 relative">
+                  <Image
+                    src={
+                      session?.user?.image ||
+                      "https://i.ibb.co/Y75m1Mk9/Final-Boss.jpg" ||
+                      "/placeholder.svg"
+                    }
+                    alt="Profile"
+                    width={200}
+                    height={200}
+                    className="w-9 h-9 rounded-full border-2 border-pink-400 transition-all duration-300 hover:border-purple-400"
+                  />
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-pink-500/0 to-purple-400/0 hover:from-pink-500/20 hover:to-purple-400/20 transition-all duration-300 opacity-0 hover:opacity-100 blur-sm"></div>
+                </button>
+
+                <button
+                  onClick={() => signOut()}
+                  className="flex items-center cursor-pointer space-x-2 bg-gradient-to-r from-red-800 to-red-800 text-white px-4 py-2 rounded-xl hover:from-red-700 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                >
+                  <UserPlus className="h-4 w-4" />
+                  <span>Logout</span>
+                </button>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -158,22 +195,36 @@ export default function TestNavbar() {
                 );
               })}
               <div className="border-t border-gray-700/50 pt-3 mt-3">
-                <Link
-                  href="/login"
-                  className="flex items-center space-x-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all duration-300"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <LogIn className="h-5 w-5" />
-                  <span>Login</span>
-                </Link>
-                <Link
-                  href="/register"
-                  className="flex items-center cursor-pointer space-x-3 px-3 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all duration-300 mt-2 shadow-lg"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <UserPlus className="h-5 w-5" />
-                  <span>Register</span>
-                </Link>
+                {!session?.user?.email ? (
+                  <>
+                    <Link
+                      href="/login"
+                      className="flex items-center space-x-3 px-3 py-3 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all duration-300"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <LogIn className="h-5 w-5" />
+                      <span>Login</span>
+                    </Link>
+                    <Link
+                      href="/register"
+                      className="flex items-center cursor-pointer space-x-3 px-3 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all duration-300 mt-2 shadow-lg"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      <UserPlus className="h-5 w-5" />
+                      <span>Register</span>
+                    </Link>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => signOut()}
+                      className="flex items-center cursor-pointer space-x-2 bg-gradient-to-r from-red-800 to-red-800 text-white px-4 py-2 rounded-xl hover:from-red-700 hover:to-red-700 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      <span>Logout</span>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
