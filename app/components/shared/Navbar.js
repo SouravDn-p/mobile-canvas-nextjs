@@ -28,7 +28,6 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const isDarkMode = true;
 
   const { data: session, status } = useSession();
 
@@ -79,9 +78,22 @@ export default function Navbar() {
       label: "Dashboard",
     },
     {
-      to: "/dashboard/walletHistory",
-      icon: <BiMoney className="w-4 h-4" />,
-      label: "Wallet History",
+      to: "/settings",
+      icon: <Settings className="w-4 h-4" />,
+      label: "Settings",
+    },
+  ];
+
+  const adminMenuItems = [
+    {
+      to: "/admin",
+      icon: <FaUserCircle className="w-4 h-4" />,
+      label: "Admin Dashboard",
+    },
+    {
+      to: "/dashboard",
+      icon: <MdOutlineDashboard className="w-4 h-4" />,
+      label: "Dashboard",
     },
     {
       to: "/settings",
@@ -189,7 +201,6 @@ export default function Navbar() {
                         src={
                           session?.user?.image ||
                           "https://i.ibb.co/Y75m1Mk9/Final-Boss.jpg" ||
-                          "/placeholder.svg" ||
                           "/placeholder.svg"
                         }
                         alt="Profile"
@@ -245,22 +256,24 @@ export default function Navbar() {
 
                         {/* Menu Items */}
                         <div className="p-2">
-                          {userMenuItems.map((item, index) => (
-                            <Link
-                              key={index}
-                              href={item.to}
-                              className="flex items-center gap-3 py-3 px-4 transition-all duration-200 relative overflow-hidden text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 rounded-xl group"
-                              onClick={() => setIsUserMenuOpen(false)}
-                            >
-                              <span className="text-blue-300 group-hover:text-purple-400 transition-all duration-300">
-                                {item.icon}
-                              </span>
-                              <span className="relative z-10 font-medium">
-                                {item.label}
-                              </span>
-                              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-transparent hover:from-pink-500/5 hover:to-purple-400/5 transition-all duration-200 opacity-0 hover:opacity-100"></div>
-                            </Link>
-                          ))}
+                          {session?.user?.role === "user"
+                            ? userMenuItems
+                            : adminMenuItems.map((item, index) => (
+                                <Link
+                                  key={index}
+                                  href={item.to}
+                                  className="flex items-center gap-3 py-3 px-4 transition-all duration-200 relative overflow-hidden text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 rounded-xl group"
+                                  onClick={() => setIsUserMenuOpen(false)}
+                                >
+                                  <span className="text-blue-300 group-hover:text-purple-400 transition-all duration-300">
+                                    {item.icon}
+                                  </span>
+                                  <span className="relative z-10 font-medium">
+                                    {item.label}
+                                  </span>
+                                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-transparent hover:from-pink-500/5 hover:to-purple-400/5 transition-all duration-200 opacity-0 hover:opacity-100"></div>
+                                </Link>
+                              ))}
                         </div>
 
                         {/* Logout Section */}

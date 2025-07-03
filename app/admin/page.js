@@ -191,19 +191,19 @@ export default function AdminPage() {
           <TabsList className="glass border-white/10">
             <TabsTrigger
               value="overview"
-              className="data-[state=active]:bg-green-500/20"
+              className="data-[state=active]:bg-green-500/20 cursor-pointer"
             >
               Overview
             </TabsTrigger>
             <TabsTrigger
               value="orders"
-              className="data-[state=active]:bg-green-500/20"
+              className="data-[state=active]:bg-green-500/20 cursor-pointer"
             >
               Recent Orders
             </TabsTrigger>
             <TabsTrigger
               value="products"
-              className="data-[state=active]:bg-green-500/20"
+              className="data-[state=active]:bg-green-500/20 cursor-pointer"
             >
               Top Products
             </TabsTrigger>
@@ -219,9 +219,12 @@ export default function AdminPage() {
                     Common administrative tasks
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-black font-semibold">
-                    <Link href="/admin/products">
+                <CardContent className="space-y-4 ">
+                  <Button className="w-full bg-gradient-to-r flex cursor-pointer from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-black font-semibold">
+                    <Link
+                      href="/admin/products"
+                      className="flex items-center text-center "
+                    >
                       <Package className="mr-2 h-4 w-4" />
                       Manage Products
                     </Link>

@@ -1,4 +1,5 @@
 import { MongoClient, ServerApiVersion } from "mongodb";
+import { getToken } from "next-auth/jwt";
 import { NextResponse } from "next/server";
 
 // MongoDB URI
@@ -14,11 +15,17 @@ const client = new MongoClient(uri, {
 });
 
 // GET method handler
-export async function GET() {
+export async function GET(req) {
   try {
     await client.connect();
     const db = client.db("NextInvManager");
     const productCollection = db.collection("Products");
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+    // 🔒 Require authentication
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     const products = await productCollection.find({}).toArray();
 

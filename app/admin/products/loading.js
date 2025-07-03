@@ -8,6 +8,7 @@ import {
   ShoppingBag,
   BarChart3,
 } from "lucide-react";
+import { BiMobile } from "react-icons/bi";
 
 export default function Loading() {
   return (
@@ -25,7 +26,7 @@ export default function Loading() {
           <Package className="h-8 w-8 text-blue-400/30" />
         </div>
         <div className="absolute top-32 right-32 animate-bounce delay-300">
-          <Zap className="h-6 w-6 text-yellow-400/30" />
+          <Zap className="h-12 w-12 text-yellow-400/30" />
         </div>
         <div className="absolute bottom-32 left-32 animate-bounce delay-500">
           <Star className="h-7 w-7 text-purple-400/30" />
@@ -47,8 +48,8 @@ export default function Loading() {
         <div className="mb-8 relative">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl blur-xl opacity-50 animate-pulse"></div>
           <div className="relative p-6 rounded-3xl bg-gradient-to-r from-blue-600 to-purple-600 shadow-2xl transform hover:scale-105 transition-transform duration-300">
-            <Package
-              className="h-16 w-16 text-white animate-spin"
+            <BiMobile
+              className="h-16 w-16 text-white animate-spin "
               style={{ animationDuration: "3s" }}
             />
           </div>
@@ -56,7 +57,7 @@ export default function Loading() {
 
         {/* Loading Text with Gradient */}
         <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-pulse">
-          InventoryPro
+          Mobile Canvas
         </h1>
 
         <p className="text-xl text-gray-300 mb-8 animate-fade-in">

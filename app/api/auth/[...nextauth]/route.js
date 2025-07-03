@@ -63,14 +63,52 @@ export const authOptions = {
   },
 
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
+    async jwt({ token, user, account, profile }) {
+      const db = client.db("NextInvManager");
+      // ⚠️ Handle OAuth logins (Google/GitHub)
+      if (
+        account &&
+        (account.provider === "google" || account.provider === "github")
+      ) {
+        const email = user?.email || token.email;
+        const name = user?.name || token.name;
+        const image = user?.image || token.picture;
+
+        let existingUser = null;
+
+        if (email) {
+          existingUser = await db.collection("Users").findOne({ email });
+          if (!existingUser) {
+            const newUser = await db.collection("Users").insertOne({
+              name,
+              email,
+              image,
+              role: "user", // default role
+              createdAt: new Date(),
+            });
+
+            token.id = newUser.insertedId.toString();
+            token.role = "user";
+          } else {
+            token.id = existingUser._id.toString();
+            token.role = existingUser.role || "user";
+          }
+
+          // Always assign manually to token
+          token.name = name;
+          token.email = email;
+          token.picture = image;
+        }
+      }
+
+      if (account?.provider === "credentials" && user) {
         token.id = user.id;
         token.role = user.role;
         token.name = user.name;
         token.email = user.email;
         token.picture = user.image;
       }
+
       return token;
     },
     async session({ session, token }) {
