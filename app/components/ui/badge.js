@@ -12,6 +12,7 @@ const Badge = ({ children, className = "", variant = "default" }) => {
       "bg-purple-500/20 text-purple-300 border border-purple-500/30 shadow-lg shadow-purple-500/10",
     admin: "bg-red-500/20 text-red-300 border border-red-500/30",
     outline: "text-foreground",
+    premium: "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30",
   };
   return (
     <span

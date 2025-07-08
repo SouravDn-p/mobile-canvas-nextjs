@@ -230,7 +230,7 @@ export default function ProductDetails() {
             {/* Action Button */}
             <button
               disabled={product.stock === 0}
-              className={`w-full py-4 rounded-xl font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg ${
+              className={`w-full py-4 rounded-xl cursor-pointer font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg ${
                 product.stock > 0
                   ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700"
                   : "bg-gray-600 text-gray-400 cursor-not-allowed"

@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Image from "next/image";
 import {
@@ -9,9 +8,6 @@ import {
   Settings,
   Edit,
   Camera,
-  Star,
-  Award,
-  Activity,
   Calendar,
   MapPin,
   Phone,
@@ -20,224 +16,159 @@ import {
   Twitter,
   Linkedin,
   Package,
-  TrendingUp,
   ShoppingBag,
   BarChart3,
-  Clock,
-  CheckCircle,
+  Save,
+  X,
+  ShoppingCart,
+  Heart,
+  History,
+  CreditCard,
+  Truck,
+  Users,
+  DollarSign,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import Button from "../components/ui/button";
+import Card from "../components/ui/card";
+import Badge from "../components/ui/badge";
+import CardHeader from "../components/ui/cardHeader";
+import CardTitle from "../components/ui/card/cardTitle";
+import CardDescription from "../components/ui/card/CardDescription";
+import CardContent from "../components/ui/cardContent";
+import StatCard from "../components/ui/StateCard";
+import ActionButton from "../components/ui/ActionButton";
+import RecentActivity from "../components/profile/RecentActivity";
+import LoadingSpinner from "../components/shared/LoadingSpinner";
+import AccessDenied from "../components/shared/AccessDenied";
 
-// Enhanced Inline Components with Dark Theme
-const Button = ({
-  children,
-  className = "",
-  variant = "default",
-  size = "default",
-  type = "button",
-  disabled = false,
-  ...props
-}) => {
-  const baseClasses =
-    "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 transform hover:scale-105";
-
-  const variants = {
-    default:
-      "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl",
-    outline:
-      "border border-gray-600 bg-gray-800/50 text-gray-200 hover:bg-gray-700/50 backdrop-blur-sm hover:border-gray-500",
-    ghost: "hover:bg-gray-800/50 text-gray-300 hover:text-white",
-    success:
-      "bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 shadow-lg hover:shadow-xl",
-    premium:
-      "bg-gradient-to-r from-yellow-600 to-orange-600 text-white hover:from-yellow-700 hover:to-orange-700 shadow-lg hover:shadow-xl",
-  };
-
-  const sizes = {
-    default: "h-11 px-6 py-2",
-    sm: "h-9 rounded-lg px-4",
-    lg: "h-12 rounded-xl px-8",
-  };
-
-  const classes = `${baseClasses} ${variants[variant]} ${
-    sizes[size]
-  } ${className} ${
-    disabled ? "opacity-50 cursor-not-allowed transform-none" : ""
-  }`;
-
-  return (
-    <button type={type} className={classes} disabled={disabled} {...props}>
-      {children}
-    </button>
-  );
-};
-
-const Card = ({ children, className = "", variant = "default", ...props }) => {
-  const variants = {
-    default:
-      "rounded-2xl border border-gray-700/50 bg-gray-900/50 text-gray-100 shadow-xl backdrop-blur-sm",
-    gradient:
-      "rounded-2xl bg-gradient-to-br from-gray-900/80 to-gray-800/80 border border-gray-700/30 text-gray-100 shadow-xl backdrop-blur-sm",
-    glass:
-      "rounded-2xl bg-gray-900/30 border border-gray-700/30 text-gray-100 shadow-xl backdrop-blur-xl",
-    premium:
-      "rounded-2xl bg-gradient-to-br from-yellow-900/20 to-orange-900/20 border border-yellow-500/30 text-gray-100 shadow-xl backdrop-blur-sm",
-  };
-
-  return (
-    <div className={`${variants[variant]} ${className}`} {...props}>
-      {children}
-    </div>
-  );
-};
-
-const CardHeader = ({ children, className = "", ...props }) => (
-  <div className={`flex flex-col space-y-1.5 p-6 ${className}`} {...props}>
-    {children}
-  </div>
-);
-
-const CardTitle = ({ children, className = "", ...props }) => (
-  <h3
-    className={`text-xl font-semibold leading-none tracking-tight ${className}`}
+const Input = ({ className = "", ...props }) => (
+  <input
+    className={`flex h-10 w-full rounded-md border border-gray-600 bg-gray-800/50 px-3 py-2 text-sm text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${className}`}
     {...props}
-  >
-    {children}
-  </h3>
-);
-
-const CardDescription = ({ children, className = "", ...props }) => (
-  <p className={`text-sm text-gray-400 ${className}`} {...props}>
-    {children}
-  </p>
-);
-
-const CardContent = ({ children, className = "", ...props }) => (
-  <div className={`p-6 pt-0 ${className}`} {...props}>
-    {children}
-  </div>
-);
-
-const Badge = ({ children, className = "", variant = "default" }) => {
-  const variants = {
-    default: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
-    admin: "bg-red-500/20 text-red-300 border border-red-500/30",
-    premium: "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30",
-    success: "bg-green-500/20 text-green-300 border border-green-500/30",
-    purple: "bg-purple-500/20 text-purple-300 border border-purple-500/30",
-  };
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold backdrop-blur-sm ${variants[variant]} ${className}`}
-    >
-      {children}
-    </span>
-  );
-};
-
-const StatCard = ({
-  icon: Icon,
-  title,
-  value,
-  description,
-  color,
-  bgGradient,
-  glowColor,
-}) => (
-  <Card
-    className={`hover:shadow-2xl ${glowColor} shadow-xl group cursor-pointer transition-all duration-500`}
-  >
-    <CardContent className="p-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-gray-400 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-white">{value}</p>
-          <p className="text-xs text-gray-500 mt-1">{description}</p>
-        </div>
-        <div
-          className={`p-3 rounded-xl bg-gradient-to-r ${bgGradient} group-hover:scale-110 transition-transform duration-300`}
-        >
-          <Icon className={`h-6 w-6 ${color}`} />
-        </div>
-      </div>
-    </CardContent>
-  </Card>
+  />
 );
 
 export default function ProfilePage() {
-  const [isEditing, setIsEditing] = useState(false);
   const { data: session, status } = useSession();
 
+  // Profile editing state
+  const [isEditing, setIsEditing] = useState(false);
+  const [profileImage, setProfileImage] = useState(null);
+  const [profileImagePreview, setProfileImagePreview] = useState(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    bio: "",
+    location: "",
+    phone: "",
+    website: "",
+    department: "",
+  });
+
+  // Initialize form data when session is loaded
+  useState(() => {
+    if (session?.user) {
+      setFormData({
+        name: session.user.name || "",
+        email: session.user.email || "",
+        bio: session.user.bio || "",
+        location: session.user.location || "",
+        phone: session.user.phone || "",
+        website: session.user.website || "",
+        department: session.user.department || "",
+      });
+    }
+  }, [session]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfileImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    setIsEditing(false);
+    console.log("Profile data to save:", formData);
+    console.log("Profile image to upload:", profileImage);
+  };
+
+  const handleCancelEdit = () => {
+    if (session?.user) {
+      setFormData({
+        name: session.user.name || "",
+        email: session.user.email || "",
+        bio: session.user.bio || "",
+        location: session.user.location || "",
+        phone: session.user.phone || "",
+        website: session.user.website || "",
+        department: session.user.department || "",
+      });
+    }
+    setProfileImagePreview(null);
+    setProfileImage(null);
+    setIsEditing(false);
+  };
+
   if (status === "loading") {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading your profile...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (!session) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <Card variant="glass" className="p-8 text-center max-w-md">
-          <div className="mb-6">
-            <Shield className="h-16 w-16 text-red-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-2">
-              Access Denied
-            </h2>
-            <p className="text-gray-400">
-              You must be logged in to view this page.
-            </p>
-          </div>
-          <Link href="/login">
-            <Button variant="default" className="w-full cursor-pointer">
-              Sign In
-            </Button>
-          </Link>
-        </Card>
-      </div>
-    );
+    return <AccessDenied />;
   }
 
   const { user } = session;
+  const isAdmin = user?.role === "admin";
 
-  const stats = [
+  // Different stats for admin vs user
+  const adminStats = [
     {
-      title: "Products Managed",
-      value: "1,234",
+      title: "Total Users",
+      value: "2,847",
       description: "+12% this month",
-      icon: Package,
+      icon: Users,
       color: "text-blue-400",
       bgGradient: "from-blue-500/20 to-cyan-500/20",
       glowColor: "shadow-blue-500/20",
     },
     {
-      title: "Orders Processed",
-      value: "856",
+      title: "Products Managed",
+      value: "1,234",
       description: "+8% this week",
-      icon: ShoppingBag,
+      icon: Package,
       color: "text-green-400",
       bgGradient: "from-green-500/20 to-emerald-500/20",
       glowColor: "shadow-green-500/20",
     },
     {
-      title: "Revenue Impact",
-      value: "$45.2K",
+      title: "Total Revenue",
+      value: "$125.4K",
       description: "+15% this quarter",
-      icon: TrendingUp,
+      icon: DollarSign,
       color: "text-purple-400",
       bgGradient: "from-purple-500/20 to-pink-500/20",
       glowColor: "shadow-purple-500/20",
     },
     {
-      title: "Efficiency Score",
-      value: "98.5%",
-      description: "Above average",
+      title: "System Health",
+      value: "99.2%",
+      description: "All systems operational",
       icon: BarChart3,
       color: "text-orange-400",
       bgGradient: "from-orange-500/20 to-red-500/20",
@@ -245,51 +176,152 @@ export default function ProfilePage() {
     },
   ];
 
-  const recentActivities = [
+  const userStats = [
     {
-      action: "Updated product inventory",
-      item: "Wireless Headphones",
-      time: "2 hours ago",
-      type: "update",
+      title: "Total Orders",
+      value: "24",
+      description: "3 this month",
+      icon: ShoppingBag,
+      color: "text-blue-400",
+      bgGradient: "from-blue-500/20 to-cyan-500/20",
+      glowColor: "shadow-blue-500/20",
     },
     {
-      action: "Added new supplier",
-      item: "TechCorp Solutions",
-      time: "5 hours ago",
-      type: "add",
+      title: "Cart Items",
+      value: "7",
+      description: "$234.50 total",
+      icon: ShoppingCart,
+      color: "text-green-400",
+      bgGradient: "from-green-500/20 to-emerald-500/20",
+      glowColor: "shadow-green-500/20",
     },
     {
-      action: "Generated monthly report",
-      item: "Q1 Analytics",
-      time: "1 day ago",
-      type: "report",
+      title: "Wishlist",
+      value: "12",
+      description: "2 on sale",
+      icon: Heart,
+      color: "text-purple-400",
+      bgGradient: "from-purple-500/20 to-pink-500/20",
+      glowColor: "shadow-purple-500/20",
     },
     {
-      action: "Approved purchase order",
-      item: "PO-2024-001",
-      time: "2 days ago",
-      type: "approve",
+      title: "Total Spent",
+      value: "$1,847",
+      description: "Since joining",
+      icon: CreditCard,
+      color: "text-orange-400",
+      bgGradient: "from-orange-500/20 to-red-500/20",
+      glowColor: "shadow-orange-500/20",
     },
   ];
 
-  const achievements = [
+  // Different recent activities for admin vs user
+  const adminActivities = [
     {
-      title: "Inventory Master",
-      description: "Managed 1000+ products",
-      icon: Award,
-      color: "text-yellow-400",
+      action: "Approved new user registration",
+      item: "john.doe@example.com",
+      time: "15 minutes ago",
+      type: "approve",
     },
     {
-      title: "Efficiency Expert",
-      description: "98%+ accuracy rate",
-      icon: Star,
-      color: "text-blue-400",
+      action: "Updated product inventory",
+      item: "iPhone 15 Pro - Added 50 units",
+      time: "1 hour ago",
+      type: "update",
     },
     {
-      title: "Team Leader",
-      description: "Led 5+ successful projects",
-      icon: Shield,
-      color: "text-purple-400",
+      action: "Resolved customer support ticket",
+      item: "Ticket #2847 - Refund processed",
+      time: "2 hours ago",
+      type: "support",
+    },
+    {
+      action: "Generated monthly sales report",
+      item: "December 2024 Analytics",
+      time: "4 hours ago",
+      type: "report",
+    },
+    {
+      action: "Added new supplier",
+      item: "TechCorp Solutions - Electronics",
+      time: "6 hours ago",
+      type: "add",
+    },
+    {
+      action: "System maintenance completed",
+      item: "Database optimization",
+      time: "1 day ago",
+      type: "system",
+    },
+  ];
+
+  const userActivities = [
+    {
+      action: "Placed new order",
+      item: "Order #ORD-2024-1847 - $89.99",
+      time: "2 hours ago",
+      type: "order",
+    },
+    {
+      action: "Added item to cart",
+      item: "Wireless Bluetooth Headphones",
+      time: "5 hours ago",
+      type: "cart",
+    },
+    {
+      action: "Left product review",
+      item: "MacBook Pro M3 - 5 stars",
+      time: "1 day ago",
+      type: "review",
+    },
+    {
+      action: "Updated shipping address",
+      item: "Changed to work address",
+      time: "2 days ago",
+      type: "profile",
+    },
+    {
+      action: "Added to wishlist",
+      item: "Gaming Mechanical Keyboard",
+      time: "3 days ago",
+      type: "wishlist",
+    },
+    {
+      action: "Redeemed coupon code",
+      item: "SAVE20 - 20% off electronics",
+      time: "1 week ago",
+      type: "coupon",
+    },
+  ];
+
+  const stats = isAdmin ? adminStats : userStats;
+  const recentActivities = isAdmin ? adminActivities : userActivities;
+
+  // User action buttons
+  const userActions = [
+    {
+      icon: ShoppingCart,
+      title: "View Cart",
+      description: "7 items • $234.50",
+      onClick: () => console.log("Navigate to cart"),
+    },
+    {
+      icon: History,
+      title: "Order History",
+      description: "View all 24 orders",
+      onClick: () => console.log("Navigate to order history"),
+    },
+    {
+      icon: Heart,
+      title: "Wishlist",
+      description: "12 saved items",
+      onClick: () => console.log("Navigate to wishlist"),
+    },
+    {
+      icon: Truck,
+      title: "Track Orders",
+      description: "2 orders in transit",
+      onClick: () => console.log("Navigate to order tracking"),
     },
   ];
 
@@ -304,21 +336,6 @@ export default function ProfilePage() {
     }
   };
 
-  const getActivityIcon = (type) => {
-    switch (type) {
-      case "update":
-        return <Edit className="h-4 w-4 text-blue-400" />;
-      case "add":
-        return <Package className="h-4 w-4 text-green-400" />;
-      case "report":
-        return <BarChart3 className="h-4 w-4 text-purple-400" />;
-      case "approve":
-        return <CheckCircle className="h-4 w-4 text-orange-400" />;
-      default:
-        return <Activity className="h-4 w-4 text-gray-400" />;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Background Effects */}
@@ -327,60 +344,90 @@ export default function ProfilePage() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-green-500/5 rounded-full blur-3xl"></div>
       </div>
-
-      <div className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8 relative z-10">
-        <div className="px-4 py-6 sm:px-0">
+      <div className="max-w-7xl mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="space-y-6 sm:space-y-8">
           {/* Header */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 Profile Dashboard
               </h1>
-              <p className="mt-2 text-gray-400">
-                Manage your account and view your performance
+              <p className="mt-2 text-gray-400 text-sm sm:text-base">
+                Manage your account and view your{" "}
+                {isAdmin ? "system" : "shopping"} performance
               </p>
             </div>
-            <div className="flex items-center space-x-3 mt-4 md:mt-0">
-              <Button variant="outline">
-                <Settings className="mr-2 h-4 w-4" />
-                Settings
-              </Button>
+            <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
               <Button
-                variant="default"
-                onClick={() => setIsEditing(!isEditing)}
+                variant="outline"
+                size="sm"
+                className="flex-1 sm:flex-none bg-transparent"
               >
-                <Edit className="mr-2 h-4 w-4" />
-                {isEditing ? "Save Changes" : "Edit Profile"}
+                <Settings className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Settings</span>
               </Button>
+              {isEditing ? (
+                <>
+                  <Button
+                    variant="success"
+                    size="sm"
+                    onClick={handleSaveProfile}
+                    className="flex-1 sm:flex-none"
+                  >
+                    <Save className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Save</span>
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={handleCancelEdit}
+                    className="flex-1 sm:flex-none"
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Cancel</span>
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => setIsEditing(true)}
+                  className="flex-1 sm:flex-none"
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Edit Profile</span>
+                </Button>
+              )}
             </div>
           </div>
 
           {/* Profile Header Card */}
-          <Card variant="gradient" className="mb-8 overflow-hidden">
+          <Card variant="gradient" className="overflow-hidden">
             <div className="relative">
               {/* Cover Background */}
-              <div className="h-32 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 relative">
+              <div className="h-24 sm:h-32 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 relative">
                 <div className="absolute inset-0 bg-black/20"></div>
-                <div className="absolute bottom-4 right-4">
+                <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4">
                   <Badge
                     variant={getRoleVariant(user.role)}
-                    className="text-sm px-4 py-2"
+                    className="text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
                   >
-                    <Shield className="mr-1 h-4 w-4" />
+                    <Shield className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
                     {user.role?.toUpperCase() || "USER"}
                   </Badge>
                 </div>
               </div>
-
               {/* Profile Content */}
-              <CardContent className="pt-0 pb-6">
-                <div className="flex flex-col md:flex-row items-start md:items-end space-y-4 md:space-y-0 md:space-x-6 -mt-16">
+              <CardContent className="pt-0 pb-4 sm:pb-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-end space-y-4 sm:space-y-0 sm:space-x-6 -mt-12 sm:-mt-16">
                   {/* Profile Image */}
-                  <div className="relative group">
-                    <div className="w-32 h-32 rounded-2xl overflow-hidden border-4 border-gray-800 bg-gray-800 shadow-2xl">
+                  <div className="relative group mx-auto sm:mx-0">
+                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-4 border-gray-800 bg-gray-800 shadow-2xl">
                       <Image
                         src={
-                          user.image || "/placeholder.svg?height=200&width=200"
+                          profileImagePreview ||
+                          user.image ||
+                          "/placeholder.svg?height=200&width=200"
                         }
                         alt="Profile"
                         width={128}
@@ -388,71 +435,185 @@ export default function ProfilePage() {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                     </div>
-                    <button className="absolute bottom-2 right-2 p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg">
-                      <Camera className="h-4 w-4" />
-                    </button>
+                    {isEditing ? (
+                      <label
+                        htmlFor="profile-image-upload"
+                        className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 p-1.5 sm:p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg cursor-pointer"
+                      >
+                        <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
+                        <input
+                          id="profile-image-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handleImageChange}
+                        />
+                      </label>
+                    ) : (
+                      <button className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 p-1.5 sm:p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg">
+                        <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
+                      </button>
+                    )}
                   </div>
-
                   {/* Profile Info */}
-                  <div className="flex-1 space-y-4">
-                    <div>
-                      <h2 className="text-3xl font-bold text-white mb-2">
-                        {user.name || "Unnamed User"}
-                      </h2>
-                      <div className="flex flex-wrap items-center gap-4 text-gray-400">
-                        <div className="flex items-center">
-                          <Mail className="h-4 w-4 mr-2" />
-                          {user.email}
+                  <div className="flex-1 space-y-3 sm:space-y-4 w-full">
+                    {isEditing ? (
+                      <div className="space-y-3 sm:space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                          <div>
+                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                              Name
+                            </label>
+                            <Input
+                              name="name"
+                              value={formData.name}
+                              onChange={handleInputChange}
+                              placeholder="Your name"
+                              className="text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                              Email
+                            </label>
+                            <Input
+                              name="email"
+                              type="email"
+                              value={formData.email}
+                              onChange={handleInputChange}
+                              placeholder="Your email"
+                              className="text-sm"
+                            />
+                          </div>
                         </div>
-                        <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-2" />
-                          {user.location}
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                            Bio
+                          </label>
+                          <textarea
+                            name="bio"
+                            value={formData.bio}
+                            onChange={handleInputChange}
+                            placeholder="Tell us about yourself"
+                            className="flex w-full rounded-md border border-gray-600 bg-gray-800/50 px-3 py-2 text-sm text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent min-h-[60px] sm:min-h-[80px]"
+                          />
                         </div>
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          Joined {user.joinDate}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                          <div>
+                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                              Location
+                            </label>
+                            <Input
+                              name="location"
+                              value={formData.location}
+                              onChange={handleInputChange}
+                              placeholder="Your location"
+                              className="text-sm"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                              Phone
+                            </label>
+                            <Input
+                              name="phone"
+                              value={formData.phone}
+                              onChange={handleInputChange}
+                              placeholder="Your phone number"
+                              className="text-sm"
+                            />
+                          </div>
+                          <div className="sm:col-span-2 lg:col-span-1">
+                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                              Department
+                            </label>
+                            <Input
+                              name="department"
+                              value={formData.department}
+                              onChange={handleInputChange}
+                              placeholder="Your department"
+                              className="text-sm"
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                            Website
+                          </label>
+                          <Input
+                            name="website"
+                            value={formData.website}
+                            onChange={handleInputChange}
+                            placeholder="Your website"
+                            className="text-sm"
+                          />
                         </div>
                       </div>
-                    </div>
-
-                    {user.bio && (
-                      <p className="text-gray-300 max-w-2xl leading-relaxed">
-                        {user.bio}
-                      </p>
+                    ) : (
+                      <>
+                        <div className="text-center sm:text-left">
+                          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+                            {user.name || "Unnamed User"}
+                          </h2>
+                          <div className="flex flex-wrap justify-center sm:justify-start items-center gap-3 sm:gap-4 text-gray-400 text-sm">
+                            <div className="flex items-center">
+                              <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
+                              <span className="truncate">{user.email}</span>
+                            </div>
+                            {user.location && (
+                              <div className="flex items-center">
+                                <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                                <span className="truncate">
+                                  {user.location}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                              <span>Joined {user.joinDate || "2023"}</span>
+                            </div>
+                          </div>
+                        </div>
+                        {user.bio && (
+                          <p className="text-gray-300 leading-relaxed text-center sm:text-left text-sm sm:text-base">
+                            {user.bio}
+                          </p>
+                        )}
+                        {/* Contact Info */}
+                        <div className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-4">
+                          {user.phone && (
+                            <div className="flex items-center text-xs sm:text-sm text-gray-400">
+                              <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
+                              <span className="truncate">{user.phone}</span>
+                            </div>
+                          )}
+                          {user.website && (
+                            <div className="flex items-center text-xs sm:text-sm text-gray-400">
+                              <Globe className="h-4 w-4 mr-2 flex-shrink-0" />
+                              <span className="truncate">{user.website}</span>
+                            </div>
+                          )}
+                          {user.department && (
+                            <div className="flex items-center text-xs sm:text-sm text-gray-400">
+                              <User className="h-4 w-4 mr-2 flex-shrink-0" />
+                              <span className="truncate">
+                                {user.department}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </>
                     )}
-
-                    {/* Contact Info */}
-                    <div className="flex flex-wrap gap-4">
-                      {user.phone && (
-                        <div className="flex items-center text-sm text-gray-400">
-                          <Phone className="h-4 w-4 mr-2" />
-                          {user.phone}
-                        </div>
-                      )}
-                      {user.website && (
-                        <div className="flex items-center text-sm text-gray-400">
-                          <Globe className="h-4 w-4 mr-2" />
-                          {user.website}
-                        </div>
-                      )}
-                      {user.department && (
-                        <div className="flex items-center text-sm text-gray-400">
-                          <User className="h-4 w-4 mr-2" />
-                          {user.department}
-                        </div>
-                      )}
-                    </div>
-
                     {/* Social Links */}
-                    <div className="flex space-x-3">
-                      <button className="p-2 bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors">
-                        <Github className="h-5 w-5" />
+                    <div className="flex justify-center sm:justify-start space-x-3">
+                      <button className="p-2 cursor-pointer bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors">
+                        <Github className="h-4 w-4 sm:h-5 sm:w-5" />
                       </button>
-                      <button className="p-2 bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors">
-                        <Twitter className="h-5 w-5" />
+                      <button className="p-2 cursor-pointer bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors">
+                        <X className="h-4 w-4 sm:h-5 sm:w-5" />
                       </button>
-                      <button className="p-2 bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors">
-                        <Linkedin className="h-5 w-5" />
+                      <button className="p-2 cursor-pointer bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors">
+                        <Linkedin className="h-4 w-4 sm:h-5 sm:w-5" />
                       </button>
                     </div>
                   </div>
@@ -462,99 +623,28 @@ export default function ProfilePage() {
           </Card>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {stats.map((stat, index) => (
               <StatCard key={index} {...stat} />
             ))}
           </div>
 
           {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
             {/* Recent Activity */}
-            <div className="lg:col-span-2">
-              <Card variant="gradient">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Activity className="mr-2 h-6 w-6 text-blue-400" />
-                    Recent Activity
-                  </CardTitle>
-                  <CardDescription>
-                    Your latest actions and updates
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {recentActivities.map((activity, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center space-x-4 p-4 border border-gray-700/50 rounded-xl hover:bg-gray-800/30 transition-all duration-300"
-                      >
-                        <div className="flex-shrink-0 p-2 rounded-lg bg-gray-800/50">
-                          {getActivityIcon(activity.type)}
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium text-white">
-                            {activity.action}
-                          </p>
-                          <p className="text-sm text-gray-400">
-                            {activity.item}
-                          </p>
-                        </div>
-                        <div className="flex items-center text-xs text-gray-500">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {activity.time}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <RecentActivity
+              isAdmin={isAdmin}
+              recentActivities={recentActivities}
+            />
 
-            {/* Achievements & Admin Tools */}
+            {/* User Actions or Admin Tools */}
             <div className="space-y-6">
-              {/* Achievements */}
-              <Card variant="glass">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Award className="mr-2 h-6 w-6 text-yellow-400" />
-                    Achievements
-                  </CardTitle>
-                  <CardDescription>
-                    Your accomplishments and milestones
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {achievements.map((achievement, index) => {
-                      const Icon = achievement.icon;
-                      return (
-                        <div
-                          key={index}
-                          className="flex items-center space-x-3 p-3 rounded-lg bg-gray-800/30"
-                        >
-                          <Icon className={`h-8 w-8 ${achievement.color}`} />
-                          <div>
-                            <p className="font-medium text-white text-sm">
-                              {achievement.title}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {achievement.description}
-                            </p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Admin Tools */}
-              {user.role === "admin" && (
+              {isAdmin ? (
+                /* Admin Tools */
                 <Card variant="premium">
                   <CardHeader>
                     <CardTitle className="flex items-center">
-                      <Shield className="mr-2 h-6 w-6 text-yellow-400" />
+                      <Shield className="mr-2 h-5 w-5 sm:h-6 sm:w-6 text-yellow-400" />
                       Admin Tools
                     </CardTitle>
                     <CardDescription>
@@ -563,34 +653,54 @@ export default function ProfilePage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start"
-                      >
-                        <Package className="mr-2 h-4 w-4" />
-                        Manage Products
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start"
-                      >
-                        <User className="mr-2 h-4 w-4" />
-                        View All Users
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start"
-                      >
-                        <BarChart3 className="mr-2 h-4 w-4" />
-                        Admin Dashboard
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start"
-                      >
-                        <Settings className="mr-2 h-4 w-4" />
-                        System Settings
-                      </Button>
+                      <ActionButton
+                        icon={Package}
+                        title="Manage Products"
+                        description="Add, edit, remove products"
+                        onClick={() =>
+                          console.log("Navigate to product management")
+                        }
+                      />
+                      <ActionButton
+                        icon={Users}
+                        title="User Management"
+                        description="View and manage users"
+                        onClick={() =>
+                          console.log("Navigate to user management")
+                        }
+                      />
+                      <ActionButton
+                        icon={BarChart3}
+                        title="Analytics Dashboard"
+                        description="View system analytics"
+                        onClick={() => console.log("Navigate to analytics")}
+                      />
+                      <ActionButton
+                        icon={Settings}
+                        title="System Settings"
+                        description="Configure system settings"
+                        onClick={() => console.log("Navigate to settings")}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                /* User Actions */
+                <Card variant="glass">
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <ShoppingBag className="mr-2 h-5 w-5 sm:h-6 sm:w-6 text-blue-400" />
+                      Quick Actions
+                    </CardTitle>
+                    <CardDescription>
+                      Manage your shopping experience
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {userActions.map((action, index) => (
+                        <ActionButton key={index} {...action} />
+                      ))}
                     </div>
                   </CardContent>
                 </Card>

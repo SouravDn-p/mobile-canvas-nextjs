@@ -28,6 +28,8 @@ const Button = ({
     admin:
       "bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700 shadow-lg hover:shadow-xl",
     link: "text-primary underline-offset-4 hover:underline",
+    danger:
+      "bg-gradient-to-r from-red-600 to-pink-600 text-white hover:from-red-700 hover:to-pink-700 shadow-lg hover:shadow-xl",
   };
 
   const sizes = {

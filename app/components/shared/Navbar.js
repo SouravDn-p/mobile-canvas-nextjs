@@ -12,6 +12,13 @@ import {
   User,
   ChevronDown,
   Settings,
+  BarChart3Icon,
+  Package,
+  Heart,
+  CreditCard,
+  Minus,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -19,7 +26,6 @@ import logo from "@/public/logo.jpg";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { MdOutlineDashboard, MdOutlineLogout } from "react-icons/md";
-import { BiMoney } from "react-icons/bi";
 import { FaUserCircle } from "react-icons/fa";
 
 export default function Navbar() {
@@ -28,11 +34,51 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const { data: session, status } = useSession();
 
+  // Mock cart data - replace with your actual cart state management
+  const [cartItems, setCartItems] = useState([
+    {
+      id: 1,
+      name: "iPhone 15 Pro",
+      price: 999,
+      quantity: 1,
+      image: "/placeholder.svg?height=60&width=60",
+    },
+    {
+      id: 2,
+      name: "MacBook Air M2",
+      price: 1299,
+      quantity: 1,
+      image: "/placeholder.svg?height=60&width=60",
+    },
+  ]);
+  const cartTotal = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+  const cartCount = cartItems.reduce((total, item) => total + item.quantity, 0);
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const updateQuantity = (id, newQuantity) => {
+    if (newQuantity === 0) {
+      setCartItems(cartItems.filter((item) => item.id !== id));
+    } else {
+      setCartItems(
+        cartItems.map((item) =>
+          item.id === id ? { ...item, quantity: newQuantity } : item
+        )
+      );
+    }
+  };
+
+  const removeFromCart = (id) => {
+    setCartItems(cartItems.filter((item) => item.id !== id));
   };
 
   // Handle scroll effect
@@ -55,13 +101,25 @@ export default function Navbar() {
     return () => document.removeEventListener("click", handleClickOutside);
   }, [isUserMenuOpen]);
 
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isUserMenuOpen || isCartOpen) {
+        setIsUserMenuOpen(false);
+        setIsCartOpen(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [isUserMenuOpen, isCartOpen]);
+
   const isActive = (path) => {
     return pathname === path;
   };
 
   const navLinks = [
     { href: "/", label: "Home", icon: Home },
-    { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
+    // { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
     { href: "/products", label: "Products", icon: ShoppingCart },
     { href: "/profile", label: "Profile", icon: User },
   ];
@@ -78,6 +136,12 @@ export default function Navbar() {
       label: "Dashboard",
     },
     {
+      to: "/orders",
+      label: "My Orders",
+      icon: <Package className="w-4 h-4" />,
+    },
+    { to: "/wishlist", label: "Wishlist", icon: <Heart className="w-4 h-4" /> },
+    {
       to: "/settings",
       icon: <Settings className="w-4 h-4" />,
       label: "Settings",
@@ -87,7 +151,7 @@ export default function Navbar() {
   const adminMenuItems = [
     {
       to: "/admin",
-      icon: <FaUserCircle className="w-4 h-4" />,
+      icon: <BarChart3Icon className="w-4 h-4" />,
       label: "Admin Dashboard",
     },
     {
@@ -166,6 +230,24 @@ export default function Navbar() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">
+            {/* Cart Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCartOpen(!isCartOpen);
+              }}
+              className="relative flex items-center space-x-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all duration-300 group"
+            >
+              <div className="relative">
+                <ShoppingCart className="h-5 w-5" />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-cyan-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold animate-pulse">
+                    {cartCount}
+                  </span>
+                )}
+              </div>
+              <span className="font-medium">Cart</span>
+            </button>
             {!session?.user?.email ? (
               <>
                 <Link href="/login">
@@ -228,52 +310,27 @@ export default function Navbar() {
                   {isUserMenuOpen && (
                     <div className="absolute right-0 mt-2 w-64 rounded-2xl overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
                       <div className="bg-gray-900/95 backdrop-blur-xl border border-gray-700/50 shadow-2xl shadow-purple-500/10">
-                        {/* User Info Header */}
-                        <div className="px-4 py-3 border-b border-gray-700/50 bg-gradient-to-r from-blue-600/10 to-purple-600/10">
-                          <div className="flex items-center space-x-3">
-                            <Image
-                              src={
-                                session?.user?.image ||
-                                "https://i.ibb.co/Y75m1Mk9/Final-Boss.jpg" ||
-                                "/placeholder.svg" ||
-                                "/placeholder.svg"
-                              }
-                              alt="Profile"
-                              width={40}
-                              height={40}
-                              className="w-10 h-10 rounded-full border-2 border-purple-500/50"
-                            />
-                            <div>
-                              <p className="font-semibold text-sm text-white">
-                                {session.user?.name || "User"}
-                              </p>
-                              <p className="text-xs truncate text-blue-300">
-                                {session.user?.email}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
                         {/* Menu Items */}
                         <div className="p-2">
-                          {session?.user?.role === "user"
+                          {(session?.user?.role === "user"
                             ? userMenuItems
-                            : adminMenuItems.map((item, index) => (
-                                <Link
-                                  key={index}
-                                  href={item.to}
-                                  className="flex items-center gap-3 py-3 px-4 transition-all duration-200 relative overflow-hidden text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 rounded-xl group"
-                                  onClick={() => setIsUserMenuOpen(false)}
-                                >
-                                  <span className="text-blue-300 group-hover:text-purple-400 transition-all duration-300">
-                                    {item.icon}
-                                  </span>
-                                  <span className="relative z-10 font-medium">
-                                    {item.label}
-                                  </span>
-                                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-transparent hover:from-pink-500/5 hover:to-purple-400/5 transition-all duration-200 opacity-0 hover:opacity-100"></div>
-                                </Link>
-                              ))}
+                            : adminMenuItems
+                          ).map((item, index) => (
+                            <Link
+                              key={index}
+                              href={item.to}
+                              className="flex items-center gap-3 py-3 px-4 transition-all duration-200 relative overflow-hidden text-gray-300 hover:text-white hover:bg-gradient-to-r hover:from-blue-600/20 hover:to-purple-600/20 rounded-xl group"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              <span className="text-blue-300 group-hover:text-purple-400 transition-all duration-300">
+                                {item.icon}
+                              </span>
+                              <span className="relative z-10 font-medium">
+                                {item.label}
+                              </span>
+                              <div className="absolute inset-0 bg-gradient-to-r from-transparent to-transparent hover:from-pink-500/5 hover:to-purple-400/5 transition-all duration-200 opacity-0 hover:opacity-100"></div>
+                            </Link>
+                          ))}
                         </div>
 
                         {/* Logout Section */}
@@ -359,32 +416,12 @@ export default function Navbar() {
                   </>
                 ) : (
                   <div className="space-y-2">
-                    {/* Mobile User Info */}
-                    <div className="flex items-center space-x-3 px-3 py-3 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-xl border border-gray-700/50">
-                      <Image
-                        src={
-                          session?.user?.image ||
-                          "https://i.ibb.co/Y75m1Mk9/Final-Boss.jpg" ||
-                          "/placeholder.svg" ||
-                          "/placeholder.svg"
-                        }
-                        alt="Profile"
-                        width={32}
-                        height={32}
-                        className="w-8 h-8 rounded-full border border-purple-500/50"
-                      />
-                      <div>
-                        <p className="text-white font-medium text-sm">
-                          {session.user?.name || "User"}
-                        </p>
-                        <p className="text-gray-400 text-xs">
-                          {session.user?.email}
-                        </p>
-                      </div>
-                    </div>
-
                     {/* Mobile User Menu Items */}
-                    {userMenuItems.map((item, index) => (
+
+                    {(session?.user?.role === "user"
+                      ? userMenuItems
+                      : adminMenuItems
+                    ).map((item, index) => (
                       <Link
                         key={index}
                         href={item.to}
@@ -414,6 +451,117 @@ export default function Navbar() {
           </div>
         )}
       </div>
+
+      {/* Cart Dropdown */}
+      {isCartOpen && (
+        <div className="absolute right-4 top-16 mt-2 w-96 rounded-2xl overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
+          <div className="bg-black/95 backdrop-blur-xl border border-gray-800/50 shadow-2xl shadow-purple-500/10">
+            {/* Cart Header */}
+            <div className="p-4 border-b border-gray-800/50 bg-gradient-to-r from-purple-600/10 to-cyan-600/10">
+              <div className="flex items-center justify-between">
+                <h3 className="text-white font-semibold text-lg">
+                  Shopping Cart
+                </h3>
+                <span className="bg-gradient-to-r from-purple-500 to-cyan-500 text-white text-sm px-2 py-1 rounded-full">
+                  {cartCount} items
+                </span>
+              </div>
+            </div>
+
+            {/* Cart Items */}
+            <div className="max-h-96 overflow-y-auto">
+              {cartItems.length === 0 ? (
+                <div className="p-8 text-center">
+                  <ShoppingCart className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">Your cart is empty</p>
+                </div>
+              ) : (
+                <div className="p-4 space-y-4">
+                  {cartItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center space-x-3 p-3 bg-gray-800/30 rounded-xl"
+                    >
+                      <Image
+                        src={item.image || "/placeholder.svg"}
+                        alt={item.name}
+                        width={60}
+                        height={60}
+                        className="w-15 h-15 rounded-lg object-cover"
+                      />
+                      <div className="flex-1">
+                        <h4 className="text-white font-medium text-sm">
+                          {item.name}
+                        </h4>
+                        <p className="text-purple-400 font-semibold">
+                          ${item.price}
+                        </p>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <button
+                            onClick={() =>
+                              updateQuantity(item.id, item.quantity - 1)
+                            }
+                            className="w-6 h-6 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
+                          >
+                            <Minus className="h-3 w-3 text-white" />
+                          </button>
+                          <span className="text-white text-sm w-8 text-center">
+                            {item.quantity}
+                          </span>
+                          <button
+                            onClick={() =>
+                              updateQuantity(item.id, item.quantity + 1)
+                            }
+                            className="w-6 h-6 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
+                          >
+                            <Plus className="h-3 w-3 text-white" />
+                          </button>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        className="text-red-400 hover:text-red-300 p-1 rounded-lg hover:bg-red-600/20 transition-all duration-200"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Cart Footer */}
+            {cartItems.length > 0 && (
+              <div className="p-4 border-t border-gray-800/50 bg-gradient-to-r from-purple-600/5 to-cyan-600/5">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-white font-semibold">Total:</span>
+                  <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                    ${cartTotal.toLocaleString()}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <Link href="/cart">
+                    <button
+                      onClick={() => setIsCartOpen(false)}
+                      className="w-full py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-all duration-300"
+                    >
+                      View Cart
+                    </button>
+                  </Link>
+                  <Link href="/checkout">
+                    <button
+                      onClick={() => setIsCartOpen(false)}
+                      className="w-full py-2 px-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white rounded-xl transition-all duration-300 font-semibold"
+                    >
+                      Checkout
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
