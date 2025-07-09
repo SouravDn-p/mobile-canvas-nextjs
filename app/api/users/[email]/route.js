@@ -34,16 +34,15 @@ export async function GET(req, context) {
 }
 
 export async function PUT(req, context) {
-  const { params } = await context;
+  const { params } = context;
+  const email = params?.email;
+
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
+  // 🔒 Check authorization
   if (!token) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  const email = params?.email;
-  console.log("params", params.email);
-  console.log("token", token?.email);
 
   if (email !== token.email) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -52,14 +51,42 @@ export async function PUT(req, context) {
   try {
     const body = await req.json();
 
+    // ✅ Pick only allowed fields to update
+    const updateFields = {};
+
+    // Basic user profile
+    if (body.name) updateFields.name = body.name;
+    if (body.phone) updateFields.phone = body.phone;
+    if (body.bio) updateFields.bio = body.bio;
+    if (body.department) updateFields.department = body.department;
+    if (body.location) updateFields.location = body.location;
+    if (body.website) updateFields.website = body.website;
+
+    // Cart & Wishlist
+    if (body.cart) updateFields.cart = body.cart;
+    if (body.wishlist) updateFields.wishlist = body.wishlist;
+
+    if (Object.keys(updateFields).length === 0) {
+      return NextResponse.json(
+        { message: "No valid fields to update" },
+        { status: 400 }
+      );
+    }
+
+    updateFields.updatedAt = new Date();
+
     const client = await clientPromise;
     const db = client.db("NextInvManager");
     const users = db.collection("Users");
 
-    const result = await users.updateOne({ email }, { $set: body });
+    const result = await users.updateOne(
+      { email },
+      { $set: updateFields },
+      { upsert: false }
+    );
 
     return NextResponse.json({
-      message: "User updated",
+      message: "User updated successfully",
       modifiedCount: result.modifiedCount,
     });
   } catch (error) {

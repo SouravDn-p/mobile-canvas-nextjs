@@ -51,6 +51,9 @@ export const productApi = createApi({
         body: userData,
       }),
     }),
+    getAllUsers: builder.query({
+      query: () => "users",
+    }),
     getUserByEmail: builder.query({
       query: (email) => `users/${email}`,
     }),
@@ -60,6 +63,13 @@ export const productApi = createApi({
         method: "PUT",
         body: data,
       }),
+    }),
+    // Inside productApi or userApi
+    getOrders: builder.query({
+      query: () => "orders",
+    }),
+    getOrdersByEmail: builder.query({
+      query: (email) => `orders/${email}`,
     }),
   }),
 });
@@ -71,6 +81,9 @@ export const {
   useUpdateProductMutation,
   useDeleteProductMutation,
   useRegisterUserMutation,
+  useGetAllUsersQuery,
   useGetUserByEmailQuery,
   useUpdateUserMutation,
+  useGetOrdersQuery,
+  useGetOrdersByEmailQuery,
 } = productApi;

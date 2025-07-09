@@ -36,6 +36,7 @@ const Button = ({
     default: "h-11 px-6 py-2",
     sm: "h-9 rounded-lg px-4",
     lg: "h-12 rounded-xl px-8",
+    xsm: "h-8 rounded-none  px-2",
   };
 
   const classes = `${baseClasses} ${variants[variant]} ${

@@ -1,10 +1,27 @@
 "use client";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Star, ShoppingCart, Eye, Heart } from "lucide-react";
+import { useSession } from "next-auth/react";
+import {
+  useGetUserByEmailQuery,
+  useUpdateUserMutation,
+} from "@/redux/api/productapi";
 import Button from "../ui/button";
 
 export default function ProductCard({ product }) {
+  const { data: session } = useSession();
+  const email = session?.user?.email;
+
+  // API calls
+  const { data: userData, refetch } = useGetUserByEmailQuery(email, {
+    skip: !email,
+  });
+  const [updateUser] = useUpdateUserMutation();
+
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const {
     id,
     _id,
@@ -19,9 +36,95 @@ export default function ProductCard({ product }) {
     isOnSale,
   } = product;
 
+  const user = userData?.user;
+  const wishlist = user?.wishlist || [];
+  const cart = user?.cart || [];
+
+  // Check if product is in wishlist
+  const isInWishlist = wishlist.some((item) => item.productId === _id);
+
   const discountPercentage = originalPrice
     ? Math.round(((originalPrice - price) / originalPrice) * 100)
     : 0;
+
+  const handleWishlistToggle = async () => {
+    if (!email || isUpdating) return;
+
+    setIsUpdating(true);
+    try {
+      let updatedWishlist;
+
+      if (isInWishlist) {
+        // Remove from wishlist
+        updatedWishlist = wishlist.filter((item) => item.productId !== _id);
+      } else {
+        // Add to wishlist
+        const wishlistItem = {
+          productId: _id,
+          name,
+          price,
+          originalPrice,
+          image,
+          category,
+          rating,
+          reviews,
+          discount: discountPercentage,
+        };
+        updatedWishlist = [...wishlist, wishlistItem];
+      }
+
+      await updateUser({
+        email,
+        data: { wishlist: updatedWishlist },
+      }).unwrap();
+
+      await refetch();
+    } catch (error) {
+      console.error("Failed to update wishlist:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleAddToCart = async () => {
+    if (!email || isUpdating) return;
+
+    setIsUpdating(true);
+    try {
+      const existingItem = cart.find((item) => item.productId === _id);
+      let updatedCart;
+
+      if (existingItem) {
+        // Update quantity if item already exists
+        updatedCart = cart.map((item) =>
+          item.productId === _id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        // Add new item to cart
+        const cartItem = {
+          productId: _id,
+          name,
+          price,
+          quantity: 1,
+          image,
+        };
+        updatedCart = [...cart, cartItem];
+      }
+
+      await updateUser({
+        email,
+        data: { cart: updatedCart },
+      }).unwrap();
+
+      await refetch();
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <div className="relative group overflow-hidden rounded-2xl transition-all duration-300 hover:scale-[1.02]">
@@ -56,9 +159,19 @@ export default function ProductCard({ product }) {
             )}
           </div>
 
-          {/* Wishlist Button */}
-          <button className="absolute top-4 cursor-pointer right-4 p-2 bg-black/50 backdrop-blur-sm rounded-full text-white hover:bg-purple-500/50 transition-all duration-300 opacity-0 group-hover:opacity-100">
-            <Heart className="h-4 w-4" />
+          {/* Dynamic Wishlist Button */}
+          <button
+            onClick={handleWishlistToggle}
+            disabled={isUpdating || !email}
+            className={`absolute top-4 right-4 p-2 backdrop-blur-sm rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${
+              isInWishlist
+                ? "bg-red-500/80 text-white hover:bg-red-600/80"
+                : "bg-black/50 text-white hover:bg-purple-500/50"
+            } ${isUpdating ? "animate-pulse" : ""}`}
+          >
+            <Heart
+              className={`h-4 w-4 ${isInWishlist ? "fill-current" : ""}`}
+            />
           </button>
 
           {/* Quick Actions - Visible on Hover */}
@@ -66,7 +179,7 @@ export default function ProductCard({ product }) {
             <Link href={`/products/${_id}`} className="flex-1">
               <Button
                 size="sm"
-                className="w-full cursor-pointer bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-purple-300 border border-purple-500/30 hover:from-purple-500/30 hover:to-cyan-500/30 backdrop-blur-sm"
+                className="w-full bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-purple-300 border border-purple-500/30 hover:from-purple-500/30 hover:to-cyan-500/30 backdrop-blur-sm"
               >
                 <Eye className="h-4 w-4 mr-2" />
                 View
@@ -74,7 +187,11 @@ export default function ProductCard({ product }) {
             </Link>
             <Button
               size="sm"
-              className="bg-gradient-to-r cursor-pointer from-green-500/20 to-emerald-500/20 text-green-300 border border-green-500/30 hover:from-green-500/30 hover:to-emerald-500/30 backdrop-blur-sm"
+              onClick={handleAddToCart}
+              disabled={isUpdating || !email}
+              className={`bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-300 border border-green-500/30 hover:from-green-500/30 hover:to-emerald-500/30 backdrop-blur-sm ${
+                isUpdating ? "animate-pulse" : ""
+              }`}
             >
               <ShoppingCart className="h-4 w-4" />
             </Button>
@@ -102,7 +219,7 @@ export default function ProductCard({ product }) {
                 <Star
                   key={i}
                   className={`h-4 w-4 ${
-                    i < Math.floor(rating)
+                    i < Math.floor(rating || 0)
                       ? "text-yellow-400 fill-current"
                       : "text-gray-600"
                   }`}
@@ -110,7 +227,7 @@ export default function ProductCard({ product }) {
               ))}
             </div>
             <span className="text-sm text-gray-400">
-              {rating} ({reviews?.toLocaleString()})
+              {rating || 0} ({reviews?.toLocaleString() || 0})
             </span>
           </div>
 
@@ -132,7 +249,7 @@ export default function ProductCard({ product }) {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full cursor-pointer border-gray-600/50 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-purple-500/50 bg-transparent"
+                className="w-full border-gray-600/50 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-purple-500/50 bg-transparent"
               >
                 <Eye className="h-4 w-4 mr-2" />
                 View Details
@@ -140,10 +257,14 @@ export default function ProductCard({ product }) {
             </Link>
             <Button
               size="sm"
-              className="bg-gradient-to-r cursor-pointer from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white"
+              onClick={handleAddToCart}
+              disabled={isUpdating || !email}
+              className={`bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white ${
+                isUpdating ? "animate-pulse" : ""
+              }`}
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
-              Add to Cart
+              {isUpdating ? "Adding..." : "Add to Cart"}
             </Button>
           </div>
         </div>

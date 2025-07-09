@@ -34,7 +34,6 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const { data: session, status } = useSession();
 
@@ -101,18 +100,6 @@ export default function Navbar() {
     return () => document.removeEventListener("click", handleClickOutside);
   }, [isUserMenuOpen]);
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (isUserMenuOpen || isCartOpen) {
-        setIsUserMenuOpen(false);
-        setIsCartOpen(false);
-      }
-    };
-    document.addEventListener("click", handleClickOutside);
-    return () => document.removeEventListener("click", handleClickOutside);
-  }, [isUserMenuOpen, isCartOpen]);
-
   const isActive = (path) => {
     return pathname === path;
   };
@@ -136,11 +123,15 @@ export default function Navbar() {
       label: "Dashboard",
     },
     {
-      to: "/orders",
+      to: "/user/orders",
       label: "My Orders",
       icon: <Package className="w-4 h-4" />,
     },
-    { to: "/wishlist", label: "Wishlist", icon: <Heart className="w-4 h-4" /> },
+    {
+      to: "/user/wishlist",
+      label: "Wishlist",
+      icon: <Heart className="w-4 h-4" />,
+    },
     {
       to: "/settings",
       icon: <Settings className="w-4 h-4" />,
@@ -230,24 +221,6 @@ export default function Navbar() {
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* Cart Button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsCartOpen(!isCartOpen);
-              }}
-              className="relative flex items-center space-x-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800/50 rounded-xl transition-all duration-300 group"
-            >
-              <div className="relative">
-                <ShoppingCart className="h-5 w-5" />
-                {cartCount > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-cyan-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold animate-pulse">
-                    {cartCount}
-                  </span>
-                )}
-              </div>
-              <span className="font-medium">Cart</span>
-            </button>
             {!session?.user?.email ? (
               <>
                 <Link href="/login">
@@ -451,117 +424,6 @@ export default function Navbar() {
           </div>
         )}
       </div>
-
-      {/* Cart Dropdown */}
-      {isCartOpen && (
-        <div className="absolute right-4 top-16 mt-2 w-96 rounded-2xl overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
-          <div className="bg-black/95 backdrop-blur-xl border border-gray-800/50 shadow-2xl shadow-purple-500/10">
-            {/* Cart Header */}
-            <div className="p-4 border-b border-gray-800/50 bg-gradient-to-r from-purple-600/10 to-cyan-600/10">
-              <div className="flex items-center justify-between">
-                <h3 className="text-white font-semibold text-lg">
-                  Shopping Cart
-                </h3>
-                <span className="bg-gradient-to-r from-purple-500 to-cyan-500 text-white text-sm px-2 py-1 rounded-full">
-                  {cartCount} items
-                </span>
-              </div>
-            </div>
-
-            {/* Cart Items */}
-            <div className="max-h-96 overflow-y-auto">
-              {cartItems.length === 0 ? (
-                <div className="p-8 text-center">
-                  <ShoppingCart className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-                  <p className="text-gray-400">Your cart is empty</p>
-                </div>
-              ) : (
-                <div className="p-4 space-y-4">
-                  {cartItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center space-x-3 p-3 bg-gray-800/30 rounded-xl"
-                    >
-                      <Image
-                        src={item.image || "/placeholder.svg"}
-                        alt={item.name}
-                        width={60}
-                        height={60}
-                        className="w-15 h-15 rounded-lg object-cover"
-                      />
-                      <div className="flex-1">
-                        <h4 className="text-white font-medium text-sm">
-                          {item.name}
-                        </h4>
-                        <p className="text-purple-400 font-semibold">
-                          ${item.price}
-                        </p>
-                        <div className="flex items-center space-x-2 mt-2">
-                          <button
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity - 1)
-                            }
-                            className="w-6 h-6 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
-                          >
-                            <Minus className="h-3 w-3 text-white" />
-                          </button>
-                          <span className="text-white text-sm w-8 text-center">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity + 1)
-                            }
-                            className="w-6 h-6 bg-gray-700 hover:bg-gray-600 rounded-full flex items-center justify-center transition-colors duration-200"
-                          >
-                            <Plus className="h-3 w-3 text-white" />
-                          </button>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => removeFromCart(item.id)}
-                        className="text-red-400 hover:text-red-300 p-1 rounded-lg hover:bg-red-600/20 transition-all duration-200"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Cart Footer */}
-            {cartItems.length > 0 && (
-              <div className="p-4 border-t border-gray-800/50 bg-gradient-to-r from-purple-600/5 to-cyan-600/5">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-white font-semibold">Total:</span>
-                  <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                    ${cartTotal.toLocaleString()}
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  <Link href="/cart">
-                    <button
-                      onClick={() => setIsCartOpen(false)}
-                      className="w-full py-2 px-4 bg-gray-700 hover:bg-gray-600 text-white rounded-xl transition-all duration-300"
-                    >
-                      View Cart
-                    </button>
-                  </Link>
-                  <Link href="/checkout">
-                    <button
-                      onClick={() => setIsCartOpen(false)}
-                      className="w-full py-2 px-4 bg-gradient-to-r from-purple-600 to-cyan-600 hover:from-purple-500 hover:to-cyan-500 text-white rounded-xl transition-all duration-300 font-semibold"
-                    >
-                      Checkout
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </nav>
   );
 }
