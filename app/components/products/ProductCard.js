@@ -163,7 +163,7 @@ export default function ProductCard({ product }) {
           <button
             onClick={handleWishlistToggle}
             disabled={isUpdating || !email}
-            className={`absolute top-4 right-4 p-2 backdrop-blur-sm rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${
+            className={`absolute top-4 right-4 p-2 cursor-pointer backdrop-blur-sm rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${
               isInWishlist
                 ? "bg-red-500/80 text-white hover:bg-red-600/80"
                 : "bg-black/50 text-white hover:bg-purple-500/50"
@@ -179,7 +179,7 @@ export default function ProductCard({ product }) {
             <Link href={`/products/${_id}`} className="flex-1">
               <Button
                 size="sm"
-                className="w-full bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-purple-300 border border-purple-500/30 hover:from-purple-500/30 hover:to-cyan-500/30 backdrop-blur-sm"
+                className="w-full bg-gradient-to-r cursor-pointer from-purple-500/20 to-cyan-500/20 text-purple-300 border border-purple-500/30 hover:from-purple-500/30 hover:to-cyan-500/30 backdrop-blur-sm"
               >
                 <Eye className="h-4 w-4 mr-2" />
                 View
@@ -189,7 +189,7 @@ export default function ProductCard({ product }) {
               size="sm"
               onClick={handleAddToCart}
               disabled={isUpdating || !email}
-              className={`bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-300 border border-green-500/30 hover:from-green-500/30 hover:to-emerald-500/30 backdrop-blur-sm ${
+              className={`bg-gradient-to-r cursor-pointer from-green-500/20 to-emerald-500/20 text-green-300 border border-green-500/30 hover:from-green-500/30 hover:to-emerald-500/30 backdrop-blur-sm ${
                 isUpdating ? "animate-pulse" : ""
               }`}
             >
@@ -234,11 +234,11 @@ export default function ProductCard({ product }) {
           {/* Price */}
           <div className="flex items-center space-x-2 mb-4">
             <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-cyan-400 bg-clip-text text-transparent">
-              ${price?.toLocaleString()}
+              ৳ {price?.toLocaleString()}
             </span>
             {originalPrice && (
               <span className="text-lg text-gray-500 line-through">
-                ${originalPrice?.toLocaleString()}
+                ৳ {originalPrice?.toLocaleString()}
               </span>
             )}
           </div>
@@ -249,7 +249,7 @@ export default function ProductCard({ product }) {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full border-gray-600/50 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-purple-500/50 bg-transparent"
+                className="w-full cursor-pointer border-gray-600/50 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-purple-500/50 bg-transparent"
               >
                 <Eye className="h-4 w-4 mr-2" />
                 View Details
@@ -259,7 +259,7 @@ export default function ProductCard({ product }) {
               size="sm"
               onClick={handleAddToCart}
               disabled={isUpdating || !email}
-              className={`bg-gradient-to-r from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white ${
+              className={`bg-gradient-to-r cursor-pointer from-purple-500 to-cyan-500 hover:from-purple-600 hover:to-cyan-600 text-white ${
                 isUpdating ? "animate-pulse" : ""
               }`}
             >

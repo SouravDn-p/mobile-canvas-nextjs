@@ -239,67 +239,7 @@ export default function OrdersPage() {
 
   // Get orders based on user role
   const rawOrders = isAdmin ? allOrdersData?.orders : userOrdersData?.orders;
-
-  // Mock data fallback
-  const mockOrders = [
-    {
-      _id: "order_001",
-      email: email,
-      items: [
-        {
-          productId: "p1001",
-          name: "Wireless Mouse",
-          quantity: 2,
-          price: 19.99,
-          image: "/placeholder.svg?height=64&width=64",
-        },
-        {
-          productId: "p1003",
-          name: "USB-C Hub",
-          quantity: 1,
-          price: 34.99,
-          image: "/placeholder.svg?height=64&width=64",
-        },
-      ],
-      total: 74.97,
-      status: "delivered",
-      createdAt: new Date("2025-01-08T14:30:00.000Z"),
-    },
-    {
-      _id: "order_002",
-      email: email,
-      items: [
-        {
-          productId: "p1005",
-          name: "Gaming Chair",
-          quantity: 1,
-          price: 199.99,
-          image: "/placeholder.svg?height=64&width=64",
-        },
-      ],
-      total: 199.99,
-      status: "processing",
-      createdAt: new Date("2025-01-09T10:15:00.000Z"),
-    },
-    {
-      _id: "order_003",
-      email: email,
-      items: [
-        {
-          productId: "p1007",
-          name: "Bluetooth Headphones",
-          quantity: 1,
-          price: 89.99,
-          image: "/placeholder.svg?height=64&width=64",
-        },
-      ],
-      total: 89.99,
-      status: "shipped",
-      createdAt: new Date("2025-01-07T16:45:00.000Z"),
-    },
-  ];
-
-  const orders = rawOrders && rawOrders.length > 0 ? rawOrders : mockOrders;
+  const orders = rawOrders;
 
   // Filter orders
   const filteredOrders = orders.filter((order) => {
@@ -395,7 +335,7 @@ export default function OrdersPage() {
                       Total Spent
                     </p>
                     <p className="text-xl sm:text-2xl font-bold text-white">
-                      ${totalSpent.toFixed(2)}
+                      ৳ {totalSpent.toFixed(2)}
                     </p>
                   </div>
                   <div className="p-2 sm:p-3 rounded-xl bg-gradient-to-r from-green-500/20 to-emerald-500/20">

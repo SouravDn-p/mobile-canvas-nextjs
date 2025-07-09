@@ -71,6 +71,13 @@ export const productApi = createApi({
     getOrdersByEmail: builder.query({
       query: (email) => `orders/${email}`,
     }),
+    placeOrder: builder.mutation({
+      query: (orderData) => ({
+        url: "orders",
+        method: "POST",
+        body: orderData,
+      }),
+    }),
   }),
 });
 
@@ -86,4 +93,5 @@ export const {
   useUpdateUserMutation,
   useGetOrdersQuery,
   useGetOrdersByEmailQuery,
+  usePlaceOrderMutation,
 } = productApi;

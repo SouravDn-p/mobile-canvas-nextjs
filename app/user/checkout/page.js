@@ -13,10 +13,14 @@ import {
   Trash2,
   ArrowLeft,
   CheckCircle,
+  Smartphone,
+  Building2,
+  Wallet,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import {
   useGetUserByEmailQuery,
+  usePlaceOrderMutation,
   useUpdateUserMutation,
 } from "@/redux/api/productapi";
 
@@ -29,6 +33,8 @@ import CardHeader from "@/app/components/ui/cardHeader";
 import CardTitle from "@/app/components/ui/card/cardTitle";
 import CardDescription from "@/app/components/ui/card/CardDescription";
 import CardContent from "@/app/components/ui/cardContent";
+import OrderDone from "@/app/components/user/OrderDone";
+import EmptyCart from "@/app/components/user/EmptyCart";
 
 const Input = ({ className = "", error, ...props }) => (
   <input
@@ -60,8 +66,8 @@ const ErrorMessage = ({ message }) => (
 
 const CheckoutItem = ({ item, onUpdateQuantity, onRemove }) => {
   return (
-    <div className="flex items-center space-x-4 p-4 border border-gray-700 rounded-lg">
-      <div className="w-16 h-16 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 border border-gray-700 rounded-lg bg-gray-800/20">
+      <div className="w-full sm:w-12 h-24 sm:h-12 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
         <Image
           src={item.image || "/placeholder.svg?height=64&width=64"}
           alt={item.name}
@@ -71,52 +77,117 @@ const CheckoutItem = ({ item, onUpdateQuantity, onRemove }) => {
         />
       </div>
 
-      <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-white truncate">{item.name}</h4>
-        <p className="text-sm text-gray-400">${item.price} each</p>
+      <div className="flex-1 min-w-0 w-full sm:w-auto">
+        <h4 className="font-medium text-white text-sm truncate">{item.name}</h4>
+        <p className="text-xs text-gray-400">${item.price} each</p>
       </div>
 
-      <div className="flex items-center ">
-        <Button
-          variant="outline"
-          size="xsm"
-          onClick={() =>
-            onUpdateQuantity(item.productId, Math.max(1, item.quantity - 1))
-          }
-        >
-          <Minus className="h-4 w-4" />
-        </Button>
-        <span className="w-8 text-center text-white text-sm">
-          {item.quantity}
-        </span>
-        <Button
-          variant="outline"
-          size="xsm"
-          onClick={() => onUpdateQuantity(item.productId, item.quantity + 1)}
-        >
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
+      <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size="xsm"
+            onClick={() =>
+              onUpdateQuantity(item.productId, Math.max(1, item.quantity - 1))
+            }
+            className="w-6 h-6 p-0"
+          >
+            <Minus className="h-3 w-3" />
+          </Button>
+          <span className="w-6 text-center text-white text-xs">
+            {item.quantity}
+          </span>
+          <Button
+            variant="outline"
+            size="xsm"
+            onClick={() => onUpdateQuantity(item.productId, item.quantity + 1)}
+            className="w-6 h-6 p-0"
+          >
+            <Plus className="h-3 w-3" />
+          </Button>
+        </div>
 
-      <div className="text-right">
-        <p className="font-medium text-white">
-          ${(item.price * item.quantity).toFixed(2)}
-        </p>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onRemove(item.productId)}
-          className="text-red-400 hover:text-red-300 p-1"
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
+        <div className="text-right">
+          <p className="font-medium text-white text-sm">
+            ৳ {(item.price * item.quantity).toFixed(2)}
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onRemove(item.productId)}
+            className="text-red-400 hover:text-red-300 p-0 h-6 w-6"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        </div>
       </div>
     </div>
   );
 };
 
+// Payment Method Selection Component
+const PaymentMethodCard = ({
+  method,
+  selected,
+  onSelect,
+  icon: Icon,
+  title,
+  description,
+  logo,
+}) => (
+  <div
+    onClick={() => onSelect(method)}
+    className={`p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 ${
+      selected
+        ? "border-blue-500 bg-blue-500/10"
+        : "border-gray-600 hover:border-gray-500 bg-gray-800/30"
+    }`}
+  >
+    <div className="flex items-center space-x-3">
+      <div
+        className={`p-2 rounded-lg ${
+          selected ? "bg-blue-500/20" : "bg-gray-700/50"
+        }`}
+      >
+        {logo ? (
+          <Image
+            src={logo || "/placeholder.svg"}
+            alt={title}
+            width={24}
+            height={24}
+            className="w-6 h-6"
+          />
+        ) : (
+          <Icon
+            className={`h-6 w-6 ${
+              selected ? "text-blue-400" : "text-gray-400"
+            }`}
+          />
+        )}
+      </div>
+      <div className="flex-1">
+        <h4
+          className={`font-medium ${selected ? "text-blue-300" : "text-white"}`}
+        >
+          {title}
+        </h4>
+        <p className="text-xs text-gray-400">{description}</p>
+      </div>
+      <div
+        className={`w-4 h-4 rounded-full border-2 ${
+          selected ? "border-blue-500 bg-blue-500" : "border-gray-500"
+        }`}
+      >
+        {selected && (
+          <div className="w-2 h-2 bg-white rounded-full m-0.5"></div>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
 export default function CheckoutPage() {
-  const { data: session, status } = useSession();
+  const { data: session, isLoading: loading, status } = useSession();
   const email = session?.user?.email;
   const router = useRouter();
 
@@ -129,11 +200,66 @@ export default function CheckoutPage() {
     skip: !email,
   });
   const [updateUser] = useUpdateUserMutation();
+  const [placeOrder, { isLoading: loadingPlaceOrder, isSuccess, error }] =
+    usePlaceOrderMutation();
 
   // State
   const [checkoutItems, setCheckoutItems] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("card");
+
+  // Payment methods available in Bangladesh
+  const paymentMethods = [
+    {
+      id: "card",
+      title: "Credit/Debit Card",
+      description: "Visa, Mastercard, American Express",
+      icon: CreditCard,
+    },
+    {
+      id: "bkash",
+      title: "bKash",
+      description: "Mobile Financial Service",
+      icon: Smartphone,
+      color: "text-pink-400",
+    },
+    {
+      id: "rocket",
+      title: "Rocket",
+      description: "Dutch-Bangla Bank Mobile Banking",
+      icon: Smartphone,
+      color: "text-purple-400",
+    },
+    {
+      id: "nagad",
+      title: "Nagad",
+      description: "Digital Financial Service",
+      icon: Smartphone,
+      color: "text-orange-400",
+    },
+    {
+      id: "upay",
+      title: "Upay",
+      description: "UCB Fintech Company Limited",
+      icon: Smartphone,
+      color: "text-green-400",
+    },
+    {
+      id: "sslcommerz",
+      title: "SSLCommerz",
+      description: "All major banks & mobile banking",
+      icon: Building2,
+      color: "text-blue-400",
+    },
+    {
+      id: "Cash On Delivery",
+      title: "Cash On Delivery",
+      description: "Hand Cash ",
+      icon: Wallet,
+      color: "text-blue-400",
+    },
+  ];
 
   // Form setup
   const {
@@ -152,13 +278,17 @@ export default function CheckoutPage() {
       city: "",
       state: "",
       zipCode: "",
-      country: "United States",
+      country: "Bangladesh",
 
       // Payment Information
       cardNumber: "",
       expiryDate: "",
       cvv: "",
       cardName: "",
+
+      // Mobile Banking
+      mobileNumber: "",
+      transactionPin: "",
 
       // Options
       saveInfo: false,
@@ -201,7 +331,7 @@ export default function CheckoutPage() {
   }, [userData]);
 
   // Loading state
-  if (status === "loading" || isLoading) {
+  if (status === "loading" || isLoading || loading) {
     return <LoadingSpinner />;
   }
 
@@ -231,8 +361,7 @@ export default function CheckoutPage() {
     0
   );
   const shipping = subtotal > 50 ? 0 : 9.99;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+  const total = subtotal + shipping;
 
   const onSubmit = async (formData) => {
     setIsProcessing(true);
@@ -240,12 +369,22 @@ export default function CheckoutPage() {
     try {
       // Simulate order processing
       await new Promise((resolve) => setTimeout(resolve, 2000));
+      const shippingAddress = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        address: formData.address,
+        city: formData.city,
+        state: formData.state,
+        zipCode: formData.zipCode,
+        country: formData.country,
+      };
 
       // Create order object
       const order = {
         items: checkoutItems,
         total: total,
         status: "processing",
+        payment: "pending",
         shippingAddress: {
           firstName: formData.firstName,
           lastName: formData.lastName,
@@ -256,16 +395,20 @@ export default function CheckoutPage() {
           country: formData.country,
         },
         paymentMethod: {
-          last4: formData.cardNumber.slice(-4),
-          type: "credit_card",
+          type: paymentMethod,
+          ...(paymentMethod === "card"
+            ? { last4: formData.cardNumber.slice(-4) }
+            : { mobileNumber: formData.mobileNumber }),
         },
         createdAt: new Date().toISOString(),
       };
 
+      await placeOrder({ order });
+
       // Clear cart after successful order
       await updateUser({
         email,
-        data: { cart: [] },
+        data: { cart: [], shippingAddress: shippingAddress },
       }).unwrap();
 
       setOrderComplete(true);
@@ -277,63 +420,11 @@ export default function CheckoutPage() {
   };
 
   if (orderComplete) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center">
-          <CardContent className="p-8">
-            <CheckCircle className="h-16 w-16 text-green-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-2">
-              Order Placed Successfully!
-            </h2>
-            <p className="text-gray-400 mb-6">
-              Thank you for your purchase. You&apos;ll receive a confirmation
-              email shortly.
-            </p>
-            <div className="space-y-3">
-              <Button
-                variant="default"
-                onClick={() => router.push("/orders")}
-                className="w-full"
-              >
-                View Orders
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => router.push("/")}
-                className="w-full"
-              >
-                Continue Shopping
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <OrderDone />;
   }
 
   if (checkoutItems.length === 0) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-        <Card className="max-w-md w-full text-center">
-          <CardContent className="p-8">
-            <ShoppingBag className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-2">
-              Your Cart is Empty
-            </h2>
-            <p className="text-gray-400 mb-6">
-              Add some items to your cart before checking out.
-            </p>
-            <Button
-              variant="default"
-              onClick={() => router.push("/products")}
-              className="w-full"
-            >
-              Browse Products
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <EmptyCart />;
   }
 
   return (
@@ -345,49 +436,52 @@ export default function CheckoutPage() {
       </div>
 
       <div className="max-w-7xl mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Header */}
-          <div className="flex items-center space-x-4">
-            <Button variant="outline" onClick={() => router.back()}>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <Button variant="outline" onClick={() => router.back()} size="sm">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
             <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold bg-gradient-to-r from-green-400 to-blue-400 bg-clip-text text-transparent">
                 Checkout
               </h1>
-              <p className="mt-2 text-gray-400 text-sm sm:text-base">
+              <p className="mt-1 sm:mt-2 text-gray-400 text-xs sm:text-sm lg:text-base">
                 Complete your purchase securely
               </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)}>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {/* Checkout Form */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-4 sm:space-y-6">
                 {/* Shipping Information */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <MapPin className="mr-2 h-5 w-5 text-blue-400" />
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center text-base sm:text-lg">
+                      <MapPin className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
                       Shipping Information
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-xs sm:text-sm">
                       Where should we deliver your order?
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
                           First Name
                         </label>
                         <Input
                           {...register("firstName", {
                             required: "First name is required",
                           })}
-                          placeholder="John"
+                          placeholder="Sourav"
+                          defaultValue={
+                            userData?.user.shippingAddress?.firstName
+                          }
                           error={errors.firstName}
                         />
                         {errors.firstName && (
@@ -395,14 +489,15 @@ export default function CheckoutPage() {
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
                           Last Name
                         </label>
                         <Input
                           {...register("lastName", {
                             required: "Last name is required",
                           })}
-                          placeholder="Doe"
+                          placeholder="Debnath"
+                          defaultValue={userData?.shippingAddress?.lastName}
                           error={errors.lastName}
                         />
                         {errors.lastName && (
@@ -413,7 +508,7 @@ export default function CheckoutPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
                           Email
                         </label>
                         <Input
@@ -424,22 +519,26 @@ export default function CheckoutPage() {
                               message: "Invalid email address",
                             },
                           })}
-                          placeholder="john@example.com"
+                          value={user?.email}
+                          readOnly
+                          placeholder="mobileCampus@gmail.com"
                           error={errors.email}
+                          className="opacity-75"
                         />
                         {errors.email && (
                           <ErrorMessage message={errors.email.message} />
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
                           Phone
                         </label>
                         <Input
                           {...register("phone", {
                             required: "Phone number is required",
                           })}
-                          placeholder="+1 (555) 123-4567"
+                          placeholder="+880 1234-567890"
+                          defaultValue={userData?.shippingAddress?.phone}
                           error={errors.phone}
                         />
                         {errors.phone && (
@@ -449,14 +548,15 @@ export default function CheckoutPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">
+                      <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
                         Address
                       </label>
                       <Input
                         {...register("address", {
                           required: "Address is required",
                         })}
-                        placeholder="123 Main Street"
+                        placeholder="Kalikaccha Nathpara"
+                        defaultValue={userData?.shippingAddress?.address}
                         error={errors.address}
                       />
                       {errors.address && (
@@ -466,14 +566,15 @@ export default function CheckoutPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">
+                        <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
                           City
                         </label>
                         <Input
                           {...register("city", {
                             required: "City is required",
                           })}
-                          placeholder="New York"
+                          placeholder="Brahmanbaria"
+                          defaultValue={userData?.shippingAddress?.city}
                           error={errors.city}
                         />
                         {errors.city && (
@@ -481,34 +582,40 @@ export default function CheckoutPage() {
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">
-                          State
+                        <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                          Division
                         </label>
                         <Select
                           {...register("state", {
-                            required: "State is required",
+                            required: "Division is required",
                           })}
+                          defaultValue={userData?.shippingAddress?.state}
                           error={errors.state}
                         >
-                          <option value="">Select State</option>
-                          <option value="NY">New York</option>
-                          <option value="CA">California</option>
-                          <option value="TX">Texas</option>
-                          <option value="FL">Florida</option>
+                          <option value="">Select Division</option>
+                          <option value="Chittagong">Chittagong</option>
+                          <option value="Dhaka">Dhaka</option>
+                          <option value="Sylhet">Sylhet</option>
+                          <option value="Rajshahi">Rajshahi</option>
+                          <option value="Khulna">Khulna</option>
+                          <option value="Barisal">Barisal</option>
+                          <option value="Rangpur">Rangpur</option>
+                          <option value="Mymensingh">Mymensingh</option>
                         </Select>
                         {errors.state && (
                           <ErrorMessage message={errors.state.message} />
                         )}
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">
-                          ZIP Code
+                        <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                          Postal Code
                         </label>
                         <Input
                           {...register("zipCode", {
-                            required: "ZIP code is required",
+                            required: "Postal code is required",
                           })}
-                          placeholder="10001"
+                          placeholder="3400"
+                          defaultValue={userData?.shippingAddress?.zipCode}
                           error={errors.zipCode}
                         />
                         {errors.zipCode && (
@@ -519,98 +626,201 @@ export default function CheckoutPage() {
                   </CardContent>
                 </Card>
 
+                {/* Payment Method Selection */}
+                <Card>
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center text-base sm:text-lg">
+                      <Wallet className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />
+                      Payment Method
+                    </CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
+                      Choose your preferred payment method
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {paymentMethods.map((method) => (
+                        <PaymentMethodCard
+                          key={method.id}
+                          method={method.id}
+                          selected={paymentMethod === method.id}
+                          onSelect={setPaymentMethod}
+                          icon={method.icon}
+                          title={method.title}
+                          description={method.description}
+                        />
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Payment Information */}
                 <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <CreditCard className="mr-2 h-5 w-5 text-green-400" />
-                      Payment Information
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center text-base sm:text-lg">
+                      <CreditCard className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
+                      Payment Details
                     </CardTitle>
-                    <CardDescription>
-                      Your payment details are secure and encrypted
+                    <CardDescription className="text-xs sm:text-sm">
+                      {paymentMethod === "card"
+                        ? "Your payment details are secure and encrypted"
+                        : "Enter your mobile banking details"}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">
-                        Card Number
-                      </label>
-                      <Input
-                        {...register("cardNumber", {
-                          required: "Card number is required",
-                          pattern: {
-                            value: /^[0-9]{16}$/,
-                            message:
-                              "Please enter a valid 16-digit card number",
-                          },
-                        })}
-                        placeholder="1234 5678 9012 3456"
-                        maxLength={16}
-                        error={errors.cardNumber}
-                      />
-                      {errors.cardNumber && (
-                        <ErrorMessage message={errors.cardNumber.message} />
-                      )}
-                    </div>
+                    {paymentMethod === "card" ? (
+                      // Credit Card Form
+                      <>
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                            Card Number
+                          </label>
+                          <Input
+                            {...register("cardNumber", {
+                              required: "Card number is required",
+                              pattern: {
+                                value: /^[0-9]{16}$/,
+                                message:
+                                  "Please enter a valid 16-digit card number",
+                              },
+                            })}
+                            placeholder="1234 5678 9012 3456"
+                            maxLength={16}
+                            error={errors.cardNumber}
+                          />
+                          {errors.cardNumber && (
+                            <ErrorMessage message={errors.cardNumber.message} />
+                          )}
+                        </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">
-                          Expiry Date
-                        </label>
-                        <Input
-                          {...register("expiryDate", {
-                            required: "Expiry date is required",
-                            pattern: {
-                              value: /^(0[1-9]|1[0-2])\/([0-9]{2})$/,
-                              message: "Please enter MM/YY format",
-                            },
-                          })}
-                          placeholder="MM/YY"
-                          maxLength={5}
-                          error={errors.expiryDate}
-                        />
-                        {errors.expiryDate && (
-                          <ErrorMessage message={errors.expiryDate.message} />
-                        )}
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-400 mb-1">
-                          CVV
-                        </label>
-                        <Input
-                          {...register("cvv", {
-                            required: "CVV is required",
-                            pattern: {
-                              value: /^[0-9]{3,4}$/,
-                              message: "Please enter a valid CVV",
-                            },
-                          })}
-                          placeholder="123"
-                          maxLength={4}
-                          error={errors.cvv}
-                        />
-                        {errors.cvv && (
-                          <ErrorMessage message={errors.cvv.message} />
-                        )}
-                      </div>
-                    </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                              Expiry Date
+                            </label>
+                            <Input
+                              {...register("expiryDate", {
+                                required: "Expiry date is required",
+                                pattern: {
+                                  value: /^(0[1-9]|1[0-2])\/([0-9]{2})$/,
+                                  message: "Please enter MM/YY format",
+                                },
+                              })}
+                              placeholder="MM/YY"
+                              maxLength={5}
+                              error={errors.expiryDate}
+                            />
+                            {errors.expiryDate && (
+                              <ErrorMessage
+                                message={errors.expiryDate.message}
+                              />
+                            )}
+                          </div>
+                          <div>
+                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                              CVV
+                            </label>
+                            <Input
+                              {...register("cvv", {
+                                required: "CVV is required",
+                                pattern: {
+                                  value: /^[0-9]{3,4}$/,
+                                  message: "Please enter a valid CVV",
+                                },
+                              })}
+                              placeholder="123"
+                              maxLength={4}
+                              error={errors.cvv}
+                            />
+                            {errors.cvv && (
+                              <ErrorMessage message={errors.cvv.message} />
+                            )}
+                          </div>
+                        </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-1">
-                        Cardholder Name
-                      </label>
-                      <Input
-                        {...register("cardName", {
-                          required: "Cardholder name is required",
-                        })}
-                        placeholder="John Doe"
-                        error={errors.cardName}
-                      />
-                      {errors.cardName && (
-                        <ErrorMessage message={errors.cardName.message} />
-                      )}
-                    </div>
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                            Cardholder Name
+                          </label>
+                          <Input
+                            {...register("cardName", {
+                              required: "Cardholder name is required",
+                            })}
+                            placeholder="Sourav Rahman"
+                            error={errors.cardName}
+                          />
+                          {errors.cardName && (
+                            <ErrorMessage message={errors.cardName.message} />
+                          )}
+                        </div>
+                      </>
+                    ) : (
+                      // Mobile Banking Form
+                      <>
+                        <div>
+                          <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                            Mobile Number
+                          </label>
+                          <Input
+                            {...register("mobileNumber", {
+                              required: "Mobile number is required",
+                              pattern: {
+                                value: /^(\+880|880|0)?1[3-9]\d{8}$/,
+                                message:
+                                  "Please enter a valid Bangladeshi mobile number",
+                              },
+                            })}
+                            placeholder="+880 1234-567890"
+                            error={errors.mobileNumber}
+                          />
+                          {errors.mobileNumber && (
+                            <ErrorMessage
+                              message={errors.mobileNumber.message}
+                            />
+                          )}
+                        </div>
+
+                        {(paymentMethod === "bkash" ||
+                          paymentMethod === "rocket" ||
+                          paymentMethod === "nagad") && (
+                          <div>
+                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
+                              Transaction PIN
+                            </label>
+                            <Input
+                              {...register("transactionPin", {
+                                required: "Transaction PIN is required",
+                                pattern: {
+                                  value: /^[0-9]{4,6}$/,
+                                  message:
+                                    "Please enter a valid PIN (4-6 digits)",
+                                },
+                              })}
+                              type="password"
+                              placeholder="Enter your PIN"
+                              maxLength={6}
+                              error={errors.transactionPin}
+                            />
+                            {errors.transactionPin && (
+                              <ErrorMessage
+                                message={errors.transactionPin.message}
+                              />
+                            )}
+                          </div>
+                        )}
+
+                        <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                          <p className="text-xs sm:text-sm text-blue-300">
+                            You will be redirected to{" "}
+                            {
+                              paymentMethods.find((m) => m.id === paymentMethod)
+                                ?.title
+                            }{" "}
+                            to complete the payment.
+                          </p>
+                        </div>
+                      </>
+                    )}
 
                     <div className="flex items-center space-x-2">
                       <input
@@ -618,7 +828,7 @@ export default function CheckoutPage() {
                         {...register("saveInfo")}
                         className="rounded border-gray-600 bg-gray-800 text-blue-600 focus:ring-blue-500"
                       />
-                      <label className="text-sm text-gray-400">
+                      <label className="text-xs sm:text-sm text-gray-400">
                         Save payment information for future purchases
                       </label>
                     </div>
@@ -627,20 +837,20 @@ export default function CheckoutPage() {
               </div>
 
               {/* Order Summary */}
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 <Card className="sticky top-4">
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <ShoppingBag className="mr-2 h-5 w-5 text-purple-400" />
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center text-base sm:text-lg">
+                      <ShoppingBag className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />
                       Order Summary
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-xs sm:text-sm">
                       {checkoutItems.length} items in your order
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {/* Order Items */}
-                    <div className="space-y-3 max-h-64 ">
+                    <div className="space-y-2 max-h-48 sm:max-h-64 overflow-y-auto">
                       {checkoutItems.map((item, index) => (
                         <CheckoutItem
                           key={item.productId || index}
@@ -653,27 +863,31 @@ export default function CheckoutPage() {
 
                     {/* Order Totals */}
                     <div className="border-t border-gray-700 pt-4 space-y-2">
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-xs sm:text-sm">
                         <span className="text-gray-400">Subtotal:</span>
                         <span className="text-white">
-                          ${subtotal.toFixed(2)}
+                          ৳ {(subtotal * 110).toFixed(2)}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm">
+                      <div className="flex justify-between text-xs sm:text-sm">
                         <span className="text-gray-400">Shipping:</span>
                         <span className="text-white">
-                          {shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
+                          {shipping === 0
+                            ? "Free"
+                            : `৳  ${(shipping * 110).toFixed(2)}`}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm">
+                      {/* <div className="flex justify-between text-xs sm:text-sm">
                         <span className="text-gray-400">Tax:</span>
-                        <span className="text-white">${tax.toFixed(2)}</span>
-                      </div>
+                        <span className="text-white">
+                          ৳{(tax * 110).toFixed(2)}
+                        </span>
+                      </div> */}
                       <div className="border-t border-gray-600 pt-2">
-                        <div className="flex justify-between font-semibold text-lg">
+                        <div className="flex justify-between font-semibold text-sm sm:text-lg">
                           <span className="text-white">Total:</span>
                           <span className="text-white">
-                            ${total.toFixed(2)}
+                            ৳ {(total * 110).toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -682,9 +896,9 @@ export default function CheckoutPage() {
                     {/* Free Shipping Notice */}
                     {subtotal < 50 && (
                       <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
-                        <p className="text-sm text-blue-300">
-                          Add ${(50 - subtotal).toFixed(2)} more for free
-                          shipping!
+                        <p className="text-xs sm:text-sm text-blue-300">
+                          Add ৳ {((50 - subtotal) * 110).toFixed(2)} more for
+                          free shipping!
                         </p>
                       </div>
                     )}
@@ -694,17 +908,17 @@ export default function CheckoutPage() {
                       type="submit"
                       variant="default"
                       disabled={isProcessing}
-                      className="w-full h-12 text-lg"
+                      className="w-full h-10 sm:h-12 text-sm sm:text-lg cursor-pointer"
                     >
                       {isProcessing ? (
                         <div className="flex items-center">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 sm:h-5 sm:w-5 border-b-2 border-white mr-2"></div>
                           Processing...
                         </div>
                       ) : (
                         <>
-                          <Lock className="mr-2 h-5 w-5" />
-                          Place Order - ${total.toFixed(2)}
+                          <Lock className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
+                          Place Order - ৳ {(total * 110).toFixed(2)}
                         </>
                       )}
                     </Button>

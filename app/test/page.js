@@ -1,857 +1,758 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
+import { useGetProductByIdQuery } from "@/redux/api/productapi";
 import Image from "next/image";
-import { useForm } from "react-hook-form";
+import { useParams, useRouter } from "next/navigation";
 import {
-  User,
-  Mail,
-  Shield,
-  Settings,
-  Edit,
-  Camera,
-  Calendar,
-  MapPin,
-  Phone,
-  Globe,
-  Github,
-  Twitter,
-  Linkedin,
-  Package,
-  ShoppingBag,
-  BarChart3,
-  Save,
-  X,
-  ShoppingCart,
+  ArrowLeft,
   Heart,
-  History,
-  CreditCard,
+  ShoppingCart,
+  Star,
+  Check,
+  Shield,
   Truck,
-  Users,
-  DollarSign,
+  RotateCcw,
+  ChevronRight,
+  Plus,
+  Minus,
+  Share,
+  Eye,
+  X,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import {
-  useGetAllUsersQuery,
   useGetUserByEmailQuery,
   useUpdateUserMutation,
-  useGetProductsQuery,
-  useGetOrdersQuery,
-  useGetOrdersByEmailQuery,
 } from "@/redux/api/productapi";
-
-// Import your existing components
-import LoadingSpinner from "../components/shared/LoadingSpinner";
-import AccessDenied from "../components/shared/AccessDenied";
+import Loading from "@/app/admin/products/loading";
 import Link from "next/link";
-import Button from "../components/ui/button";
-import Card from "../components/ui/card";
-import Badge from "../components/ui/badge";
-import CardContent from "../components/ui/cardContent";
-import StatCard from "../components/ui/StateCard";
-import RecentActivity from "../components/profile/RecentActivity";
-import Actions from "../components/profile/Actions";
 
-const Input = ({ className = "", error, ...props }) => (
-  <input
-    className={`flex h-10 w-full rounded-md border ${
-      error ? "border-red-500" : "border-gray-600"
-    } bg-gray-800/50 px-3 py-2 text-sm text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
-      error ? "focus:ring-red-500" : "focus:ring-blue-500"
-    } focus:border-transparent ${className}`}
-    {...props}
-  />
-);
+const categories = [
+  { id: "phones", name: "Smartphones", icon: "📱" },
+  { id: "tablets", name: "Tablets", icon: "📟" },
+  { id: "laptops", name: "Laptops", icon: "💻" },
+  { id: "accessories", name: "Accessories", icon: "🎧" },
+  { id: "wearables", name: "Wearables", icon: "⌚" },
+  { id: "Electronics", name: "Electronics", icon: "🔌" },
+];
 
-const ErrorMessage = ({ message }) => (
-  <p className="text-red-400 text-xs mt-1">{message}</p>
-);
+const formatPrice = (price) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "BDT",
+    minimumFractionDigits: 2,
+  }).format(price);
+};
 
-export default function ProfilePage() {
-  const { data: session, status } = useSession();
+// const formatPrice = (price) => {
+//   return new Intl.NumberFormat("bn-BD", {
+//     style: "currency",
+//     currency: "BDT",
+//     minimumFractionDigits: 2,
+//   }).format(price);
+// };
+
+export default function ProductDetails() {
+  const { id } = useParams();
+  const router = useRouter();
+  const { data: session } = useSession();
   const email = session?.user?.email;
 
-  // Redux API calls
-  const { data: allUserData, isLoading: allUserLoading } =
-    useGetAllUsersQuery();
-  const {
-    data: userData,
-    error,
-    isLoading,
-    refetch: refetchUser,
-  } = useGetUserByEmailQuery(email, {
+  // API calls
+  const { data, isLoading, error } = useGetProductByIdQuery(id);
+  const { data: userData, refetch } = useGetUserByEmailQuery(email, {
     skip: !email,
   });
-  const [updateUser, { isLoading: updating }] = useUpdateUserMutation();
+  const [updateUser] = useUpdateUserMutation();
 
-  // Additional API calls for more data
-  const { data: productsData, isLoading: productsLoading } =
-    useGetProductsQuery();
-  const { data: allOrdersData, isLoading: allOrdersLoading } =
-    useGetOrdersQuery();
-  const { data: userOrdersData, isLoading: userOrdersLoading } =
-    useGetOrdersByEmailQuery(email, {
-      skip: !email,
-    });
+  // State
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  // Profile editing state
-  const [isEditing, setIsEditing] = useState(false);
-  const [profileImage, setProfileImage] = useState(null);
-  const [profileImagePreview, setProfileImagePreview] = useState(null);
+  const product = data?.data;
+  const user = userData?.user;
+  const wishlist = user?.wishlist || [];
+  const cart = user?.cart || [];
 
-  // React Hook Form setup
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isDirty },
-    watch,
-  } = useForm({
-    defaultValues: {
-      name: "",
-      phone: "",
-      bio: "",
-      location: "",
-      website: "",
-      department: "",
-    },
-  });
+  // Check if product is in wishlist
+  const isInWishlist = wishlist.some((item) => item.productId === product?._id);
 
-  // Initialize form data when user data is loaded
-  useEffect(() => {
-    if (userData?.user) {
-      const user = userData.user;
-      reset({
-        name: user.name || "",
-        phone: user.phone || "",
-        bio: user.bio || "",
-        location: user.location || "",
-        website: user.website || "",
-        department: user.department || "",
-      });
-    }
-  }, [userData, reset]);
+  if (isLoading) return <Loading />;
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setProfileImage(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const onSubmit = async (formData) => {
-    if (!email) return;
-
-    try {
-      await updateUser({
-        email,
-        data: formData,
-      }).unwrap();
-
-      // Refetch user data to get updated information
-      await refetchUser();
-      setIsEditing(false);
-      setProfileImagePreview(null);
-      setProfileImage(null);
-    } catch (error) {
-      console.error("Failed to update profile:", error);
-    }
-  };
-
-  const handleCancelEdit = () => {
-    // Reset form to original values
-    if (userData?.user) {
-      const user = userData.user;
-      reset({
-        name: user.name || "",
-        phone: user.phone || "",
-        bio: user.bio || "",
-        location: user.location || "",
-        website: user.website || "",
-        department: user.department || "",
-      });
-    }
-    setProfileImagePreview(null);
-    setProfileImage(null);
-    setIsEditing(false);
-  };
-
-  // Loading state
-  if (status === "loading" || isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  // Unauthenticated state
-  if (status === "unauthenticated") {
-    return <AccessDenied />;
-  }
-
-  // Error state
-  if (error) {
+  if (error || !product) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-        <Card
-          variant="glass"
-          className="p-6 sm:p-8 text-center max-w-md w-full"
-        >
-          <div className="mb-6">
-            <Shield className="h-16 w-16 text-red-400 mx-auto mb-4" />
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
-              Error Loading Profile
-            </h2>
-            <p className="text-gray-400 text-sm sm:text-base">
-              {error.message || "Failed to load user data"}
-            </p>
-          </div>
-          <Button variant="default" onClick={() => window.location.reload()}>
-            Try Again
-          </Button>
-        </Card>
+        {/* Background Effects */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-red-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="text-center max-w-md relative z-10">
+          <div className="text-6xl mb-4">🔍</div>
+          <h3 className="text-2xl font-bold text-white mb-2">
+            Product Not Found
+          </h3>
+          <p className="text-gray-400 mb-6">
+            The product you&apos;re looking for doesn&apos;t exist or has been
+            removed.
+          </p>
+          <button
+            onClick={() => router.push("/products")}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:from-purple-600 hover:to-pink-600 transition-all duration-300"
+          >
+            Back to Products
+          </button>
+        </div>
       </div>
     );
   }
 
-  const user = userData?.user || session?.user;
-  const isAdmin = user?.role === "admin";
+  const currentCategory = categories.find((cat) => cat.id === product.category);
+  const description =
+    product.description ||
+    `Discover the ${product.name}, a high-quality product with excellent performance and reliability.`;
 
-  // Process API data with fallbacks
-  const products = productsData?.data || [];
-  const allOrders = allOrdersData?.orders || [];
-  const userOrders = userOrdersData?.orders || [];
+  // Mock additional images for demonstration
+  const productImages = [
+    product?.image ||
+      product?.images?.[0]?.url ||
+      "/placeholder.svg?height=600&width=600",
+    "/placeholder.svg?height=600&width=600",
+    "/placeholder.svg?height=600&width=600",
+    "/placeholder.svg?height=600&width=600",
+  ];
 
-  // Use appropriate orders based on user role
-  const orders = isAdmin ? allOrders : userOrders;
+  const handleWishlistToggle = async () => {
+    if (!email || isUpdating) return;
 
-  // Get real data from user object
-  const cartItems = user?.cart || [];
-  const wishlistItems = user?.wishlist || [];
-  const recentActivities = user?.recentActivity || [];
+    setIsUpdating(true);
+    try {
+      let updatedWishlist;
 
-  // Calculate real stats from API data
-  const calculateUserStats = () => {
-    const totalOrders = userOrders.length || 24;
-    const monthlyOrders =
-      userOrders.filter((order) => {
-        const orderDate = new Date(order.createdAt);
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
-        return (
-          orderDate.getMonth() === currentMonth &&
-          orderDate.getFullYear() === currentYear
+      if (isInWishlist) {
+        updatedWishlist = wishlist.filter(
+          (item) => item.productId !== product._id
         );
-      }).length || 3;
+      } else {
+        const wishlistItem = {
+          productId: product._id,
+          name: product.name,
+          price: product.price,
+          originalPrice: product.originalPrice,
+          image: product.image,
+          category: product.category,
+          rating: product.rating,
+          reviews: product.reviews,
+          discount: product.discount || 0,
+        };
+        updatedWishlist = [...wishlist, wishlistItem];
+      }
 
-    const cartItemsCount = cartItems.length || 7;
-    const cartTotal =
-      cartItems.reduce(
-        (total, item) => total + item.price * item.quantity,
-        0
-      ) || 234.5;
+      await updateUser({
+        email,
+        data: { wishlist: updatedWishlist },
+      }).unwrap();
 
-    const wishlistCount = wishlistItems.length || 12;
-    const wishlistOnSale =
-      wishlistItems.filter((item) => item.onSale || item.discount > 0).length ||
-      2;
-
-    const totalSpent =
-      userOrders.reduce((total, order) => total + (order.total || 0), 0) ||
-      1847;
-    const ordersInTransit =
-      userOrders.filter(
-        (order) => order.status === "shipped" || order.status === "processing"
-      ).length || 2;
-
-    return {
-      totalOrders,
-      monthlyOrders,
-      cartItemsCount,
-      cartTotal: cartTotal.toFixed(2),
-      wishlistCount,
-      wishlistOnSale,
-      totalSpent,
-      ordersInTransit,
-    };
-  };
-
-  const calculateAdminStats = () => {
-    const totalUsers = allUserData?.users?.length || 20;
-    const productsManaged = products.length || 1234;
-    const totalRevenue =
-      allOrders.reduce((total, order) => total + (order.total || 0), 0) ||
-      125400;
-    const systemHealth = 99.2; // Mock data - would come from system monitoring
-
-    return {
-      totalUsers,
-      productsManaged,
-      totalRevenue,
-      systemHealth,
-    };
-  };
-
-  const userStatsData = calculateUserStats();
-  const adminStatsData = calculateAdminStats();
-
-  // Different stats for admin vs user
-  const adminStats = [
-    {
-      title: "Total Users",
-      value: adminStatsData.totalUsers.toLocaleString(),
-      description: "+12% this month",
-      icon: Users,
-      color: "text-blue-400",
-      bgGradient: "from-blue-500/20 to-cyan-500/20",
-      glowColor: "shadow-blue-500/20",
-    },
-    {
-      title: "Products Managed",
-      value: adminStatsData.productsManaged.toLocaleString(),
-      description: "+8% this week",
-      icon: Package,
-      color: "text-green-400",
-      bgGradient: "from-green-500/20 to-emerald-500/20",
-      glowColor: "shadow-green-500/20",
-    },
-    {
-      title: "Total Revenue",
-      value: `$${(adminStatsData.totalRevenue / 1000).toFixed(1)}K`,
-      description: "+15% this quarter",
-      icon: DollarSign,
-      color: "text-purple-400",
-      bgGradient: "from-purple-500/20 to-pink-500/20",
-      glowColor: "shadow-purple-500/20",
-    },
-    {
-      title: "System Health",
-      value: `${adminStatsData.systemHealth}%`,
-      description: "All systems operational",
-      icon: BarChart3,
-      color: "text-orange-400",
-      bgGradient: "from-orange-500/20 to-red-500/20",
-      glowColor: "shadow-orange-500/20",
-    },
-  ];
-
-  const userStats = [
-    {
-      title: "Total Orders",
-      value: userStatsData.totalOrders.toString(),
-      description: `${userStatsData.monthlyOrders} this month`,
-      icon: ShoppingBag,
-      color: "text-blue-400",
-      bgGradient: "from-blue-500/20 to-cyan-500/20",
-      glowColor: "shadow-blue-500/20",
-    },
-    {
-      title: "Cart Items",
-      value: userStatsData.cartItemsCount.toString(),
-      description: `$${userStatsData.cartTotal} total`,
-      icon: ShoppingCart,
-      color: "text-green-400",
-      bgGradient: "from-green-500/20 to-emerald-500/20",
-      glowColor: "shadow-green-500/20",
-    },
-    {
-      title: "Wishlist",
-      value: userStatsData.wishlistCount.toString(),
-      description: `${userStatsData.wishlistOnSale} on sale`,
-      icon: Heart,
-      color: "text-purple-400",
-      bgGradient: "from-purple-500/20 to-pink-500/20",
-      glowColor: "shadow-purple-500/20",
-    },
-    {
-      title: "Total Spent",
-      value: `$${userStatsData.totalSpent.toLocaleString()}`,
-      description: "Since joining",
-      icon: CreditCard,
-      color: "text-orange-400",
-      bgGradient: "from-orange-500/20 to-red-500/20",
-      glowColor: "shadow-orange-500/20",
-    },
-  ];
-
-  // Generate activities from real data with fallbacks
-  const generateActivities = () => {
-    const activities = [];
-
-    // Add real activities from user data
-    recentActivities.forEach((activity) => {
-      activities.push({
-        action: getActivityAction(activity.type),
-        item: activity.description,
-        time: formatTimeAgo(new Date(activity.timestamp)),
-        type: activity.type,
-      });
-    });
-
-    // Add recent orders
-    const recentOrders = orders.slice(0, 2);
-    recentOrders.forEach((order) => {
-      activities.push({
-        action: isAdmin ? "New order received" : "Placed new order",
-        item: `Order #${order._id?.slice(-6) || "654321"} - $${order.total}`,
-        time: formatTimeAgo(new Date(order.createdAt)),
-        type: "order",
-      });
-    });
-
-    // Fill with mock data if needed
-    const mockActivities = [
-      {
-        action: "Added item to cart",
-        item: "Wireless Bluetooth Headphones",
-        time: "5 hours ago",
-        type: "cart",
-      },
-      {
-        action: "Left product review",
-        item: "MacBook Pro M3 - 5 stars",
-        time: "1 day ago",
-        type: "review",
-      },
-      {
-        action: "Updated shipping address",
-        item: "Changed to work address",
-        time: "2 days ago",
-        type: "profile",
-      },
-    ];
-
-    return [...activities, ...mockActivities].slice(0, 6);
-  };
-
-  const getActivityAction = (type) => {
-    switch (type) {
-      case "login":
-        return "Logged in";
-      case "update_profile":
-        return "Updated profile";
-      case "placed_order":
-        return "Placed order";
-      default:
-        return "Activity";
+      await refetch();
+    } catch (error) {
+      console.error("Failed to update wishlist:", error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const formatTimeAgo = (date) => {
-    const now = new Date();
-    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+  const handleAddToCart = async () => {
+    if (!email || isUpdating) return;
 
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} minutes ago`;
-    } else if (diffInMinutes < 1440) {
-      return `${Math.floor(diffInMinutes / 60)} hours ago`;
-    } else {
-      return `${Math.floor(diffInMinutes / 1440)} days ago`;
+    setIsUpdating(true);
+    try {
+      const existingItem = cart.find((item) => item.productId === product._id);
+      let updatedCart;
+
+      if (existingItem) {
+        updatedCart = cart.map((item) =>
+          item.productId === product._id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      } else {
+        const cartItem = {
+          productId: product._id,
+          name: product.name,
+          price: product.price,
+          quantity: quantity,
+          image: product.image,
+        };
+        updatedCart = [...cart, cartItem];
+      }
+
+      await updateUser({
+        email,
+        data: { cart: updatedCart },
+      }).unwrap();
+
+      await refetch();
+    } catch (error) {
+      console.error("Failed to add to cart:", error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const stats = isAdmin ? adminStats : userStats;
-  const activityData = generateActivities();
-
-  // User action buttons with real data
-  const userActions = [
-    {
-      icon: ShoppingCart,
-      title: "View Cart",
-      description: `${userStatsData.cartItemsCount} items • $${userStatsData.cartTotal}`,
-      onClick: () => console.log("Navigate to cart"),
-    },
-    {
-      icon: History,
-      title: "Order History",
-      description: `View all ${userStatsData.totalOrders} orders`,
-      onClick: () => console.log("Navigate to order history"),
-    },
-    {
-      icon: Heart,
-      title: "Wishlist",
-      description: `${userStatsData.wishlistCount} saved items`,
-      onClick: () => console.log("Navigate to wishlist"),
-    },
-    {
-      icon: Truck,
-      title: "Track Orders",
-      description: `${userStatsData.ordersInTransit} orders in transit`,
-      onClick: () => console.log("Navigate to order tracking"),
-    },
+  const productFeatures = [
+    "Unprecedented imagery from the world's first compact with global shutter full-frame image sensor",
+    "AI-powered autofocus with real-time tracking",
+    "Professional 4K video recording capabilities",
+    "Weather-sealed body for outdoor photography",
+    "Extended battery life for all-day shooting",
   ];
-
-  const getRoleVariant = (role) => {
-    switch (role?.toLowerCase()) {
-      case "admin":
-        return "admin";
-      case "premium":
-        return "premium";
-      default:
-        return "default";
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-green-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500/5 rounded-full blur-3xl"></div>
       </div>
-      <div className="max-w-7xl mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="space-y-6 sm:space-y-8">
-          {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-            <div>
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Profile Dashboard
-              </h1>
-              <p className="mt-2 text-gray-400 text-sm sm:text-base">
-                Manage your account and view your
-                {isAdmin ? "system" : "shopping"} performance
-              </p>
-              {/* Loading indicators for additional data */}
-              {(productsLoading || allOrdersLoading || userOrdersLoading) && (
-                <div className="flex items-center mt-2 text-xs text-gray-500">
-                  <div className="animate-spin rounded-full h-3 w-3 border-b border-blue-500 mr-2"></div>
-                  Loading additional data...
-                </div>
-              )}
-            </div>
-            <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1 sm:flex-none bg-transparent"
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                <span className="hidden sm:inline">Settings</span>
-              </Button>
-              {isEditing ? (
-                <>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    onClick={handleSubmit(onSubmit)}
-                    disabled={updating || !isDirty}
-                    className="flex-1 sm:flex-none"
-                  >
-                    <Save className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">
-                      {updating ? "Saving..." : "Save"}
-                    </span>
-                  </Button>
-                  <Button
-                    variant="danger"
-                    size="sm"
-                    onClick={handleCancelEdit}
-                    className="flex-1 sm:flex-none"
-                  >
-                    <X className="mr-2 h-4 w-4" />
-                    <span className="hidden sm:inline">Cancel</span>
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => setIsEditing(true)}
-                  className="flex-1 sm:flex-none"
-                >
-                  <Edit className="mr-2 h-4 w-4" />
-                  <span className="hidden sm:inline">Edit Profile</span>
-                </Button>
-              )}
-            </div>
-          </div>
 
-          {/* Profile Header Card */}
-          <Card variant="gradient" className="overflow-hidden">
+      <div className="relative z-10">
+        {/* Mobile/Tablet Layout */}
+        <div className="lg:hidden">
+          <div className="max-w-2xl mx-auto bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-t-3xl mt-4 mx-4 overflow-hidden">
+            {/* Mobile Header */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-700/50">
+              <button
+                onClick={() => router.back()}
+                className="p-2 hover:bg-gray-700/50 rounded-full transition-colors"
+              >
+                <ArrowLeft className="h-6 w-6 text-white" />
+              </button>
+
+              <div className="flex-1 text-center">
+                <h1 className="text-lg font-bold text-white truncate px-4">
+                  {product.name}
+                </h1>
+                <p className="text-xs text-gray-400">
+                  {product.supplier || "Premium Quality"}
+                </p>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button className="p-2 hover:bg-gray-700/50 rounded-full transition-colors">
+                  <Share className="h-5 w-5 text-gray-400" />
+                </button>
+                <button
+                  onClick={handleWishlistToggle}
+                  disabled={isUpdating || !email}
+                  className={`p-2 rounded-full transition-colors ${
+                    isInWishlist
+                      ? "text-red-400 hover:bg-red-500/10"
+                      : "text-gray-400 hover:bg-gray-700/50"
+                  } ${isUpdating ? "animate-pulse" : ""}`}
+                >
+                  <Heart
+                    className={`h-5 w-5 ${isInWishlist ? "fill-current" : ""}`}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* Product Images */}
             <div className="relative">
-              {/* Cover Background */}
-              <div className="h-24 sm:h-32 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 relative">
-                <div className="absolute inset-0 bg-black/20"></div>
-                <div className="absolute bottom-2 sm:bottom-4 right-2 sm:right-4">
-                  <Badge
-                    variant={getRoleVariant(user?.role)}
-                    className="text-xs sm:text-sm px-2 sm:px-4 py-1 sm:py-2"
+              <div className="aspect-square bg-gray-900/50 relative overflow-hidden">
+                <Image
+                  src={productImages[selectedImageIndex] || "/placeholder.svg"}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+                {product.trending && (
+                  <span className="absolute top-4 left-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-bold px-3 py-1 rounded-full">
+                    Trending
+                  </span>
+                )}
+                {product.discount && (
+                  <span className="absolute top-4 right-4 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                    -{product.discount}% OFF
+                  </span>
+                )}
+              </div>
+
+              {/* Image Thumbnails */}
+              <div className="flex space-x-3 p-4 overflow-x-auto">
+                {productImages.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-300 ${
+                      selectedImageIndex === index
+                        ? "border-purple-500 shadow-lg shadow-purple-500/25"
+                        : "border-gray-600 hover:border-gray-500"
+                    }`}
                   >
-                    <Shield className="mr-1 h-3 w-3 sm:h-4 sm:w-4" />
-                    {user?.role?.toUpperCase() || "USER"}
-                  </Badge>
+                    <Image
+                      src={image || "/placeholder.svg"}
+                      alt={`${product.name} ${index + 1}`}
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Product Info */}
+            <div className="p-4 space-y-6">
+              {/* Price Section */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center space-x-3">
+                    <span className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                      {formatPrice(product.price)}
+                    </span>
+                    {product.originalPrice && (
+                      <span className="text-lg text-gray-500 line-through">
+                        {formatPrice(product.originalPrice)}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-sm text-gray-400 mt-1">
+                    {product.stock > 0 ? (
+                      <span className="text-green-400">
+                        ✓ {product.stock} units in stock
+                      </span>
+                    ) : (
+                      <span className="text-red-400">✗ Out of stock</span>
+                    )}
+                  </p>
+                </div>
+                <button className="flex items-center text-purple-400 font-medium text-sm hover:text-purple-300 transition-colors">
+                  More Options
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </button>
+              </div>
+
+              {/* Rating */}
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-5 w-5 ${
+                        i < Math.floor(product.rating || 0)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "fill-gray-600 text-gray-600"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm font-medium text-white">
+                  {product.rating || 0}
+                </span>
+                <span className="text-sm text-gray-400">
+                  ({product.reviews || 0} reviews)
+                </span>
+              </div>
+
+              {/* About This Item */}
+              <div className="space-y-4">
+                <h3 className="text-xl font-semibold text-white">
+                  About This Item
+                </h3>
+                <p className="text-gray-300 text-sm leading-relaxed">
+                  {description}
+                </p>
+
+                {/* Features List */}
+                <ul className="space-y-3">
+                  {productFeatures.map((feature, index) => (
+                    <li
+                      key={index}
+                      className="flex items-start space-x-3 text-sm text-gray-300"
+                    >
+                      <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Product Details */}
+              <div className="grid grid-cols-2 gap-4 py-4 border-t border-gray-700/50">
+                <div className="flex items-center space-x-2 text-sm text-gray-300">
+                  <Truck className="h-4 w-4 text-green-400" />
+                  <span>Free Shipping</span>
+                </div>
+                <div className="flex items-center space-x-2 text-sm text-gray-300">
+                  <Shield className="h-4 w-4 text-blue-400" />
+                  <span>1 Year Warranty</span>
+                </div>
+                <div className="flex items-center space-x-2 text-sm text-gray-300">
+                  <RotateCcw className="h-4 w-4 text-purple-400" />
+                  <span>30-Day Returns</span>
+                </div>
+                <div className="flex items-center space-x-2 text-sm text-gray-300">
+                  <Check className="h-4 w-4 text-green-400" />
+                  <span>Authentic Product</span>
                 </div>
               </div>
-              {/* Profile Content */}
-              <CardContent className="pt-0 pb-4 sm:pb-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-end space-y-4 sm:space-y-0 sm:space-x-6 -mt-12 sm:-mt-16">
-                  {/* Profile Image */}
-                  <div className="relative group mx-auto sm:mx-0">
-                    <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-4 border-gray-800 bg-gray-800 shadow-2xl">
-                      <Image
-                        src={
-                          profileImagePreview ||
-                          user?.image ||
-                          "/placeholder.svg?height=200&width=200"
-                        }
-                        alt="Profile"
-                        width={128}
-                        height={128}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                      />
-                    </div>
-                    {isEditing ? (
-                      <label
-                        htmlFor="profile-image-upload"
-                        className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 p-1.5 sm:p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg cursor-pointer"
-                      >
-                        <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
-                        <input
-                          id="profile-image-upload"
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handleImageChange}
-                        />
-                      </label>
-                    ) : (
-                      <button className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 p-1.5 sm:p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors shadow-lg">
-                        <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
-                      </button>
-                    )}
+
+              {/* Quantity Selector */}
+              <div className="flex items-center justify-between py-4 border-t border-gray-700/50">
+                <span className="text-sm font-medium text-white">Quantity</span>
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center hover:bg-gray-700/50 transition-colors"
+                  >
+                    <Minus className="h-4 w-4 text-gray-300" />
+                  </button>
+                  <span className="w-8 text-center font-medium text-white text-lg">
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() =>
+                      setQuantity(Math.min(product.stock || 99, quantity + 1))
+                    }
+                    className="w-10 h-10 rounded-full border border-gray-600 flex items-center justify-center hover:bg-gray-700/50 transition-colors"
+                  >
+                    <Plus className="h-4 w-4 text-gray-300" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Fixed Bottom Button */}
+            <div className="sticky bottom-0 bg-gray-800/80 backdrop-blur-sm border-t border-gray-700/50 p-4">
+              <button
+                onClick={handleAddToCart}
+                disabled={product.stock === 0 || isUpdating || !email}
+                className={`w-full py-4 rounded-2xl font-semibold text-white transition-all duration-300 ${
+                  product.stock > 0 && email && !isUpdating
+                    ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 active:scale-95 shadow-lg shadow-purple-500/25"
+                    : "bg-gray-600 cursor-not-allowed"
+                }`}
+              >
+                {isUpdating ? (
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                    Adding to Cart...
                   </div>
-                  {/* Profile Info */}
-                  <div className="flex-1 space-y-3 sm:space-y-4 w-full">
-                    {isEditing ? (
-                      <form
-                        onSubmit={handleSubmit(onSubmit)}
-                        className="space-y-3 sm:space-y-4"
-                      >
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                          <div>
-                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
-                              Name
-                            </label>
-                            <Input
-                              {...register("name", {
-                                required: "Name is required",
-                                minLength: {
-                                  value: 2,
-                                  message: "Name must be at least 2 characters",
-                                },
-                              })}
-                              placeholder="Your name"
-                              className="text-sm"
-                              error={errors.name}
-                            />
-                            {errors.name && (
-                              <ErrorMessage message={errors.name.message} />
-                            )}
-                          </div>
-                          <div>
-                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
-                              Email
-                            </label>
-                            <Input
-                              value={user?.email || ""}
-                              disabled
-                              className="text-sm opacity-50"
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
-                            Bio
-                          </label>
-                          <textarea
-                            {...register("bio", {
-                              maxLength: {
-                                value: 500,
-                                message: "Bio must be less than 500 characters",
-                              },
-                            })}
-                            placeholder="Tell us about yourself"
-                            className={`flex w-full rounded-md border ${
-                              errors.bio ? "border-red-500" : "border-gray-600"
-                            } bg-gray-800/50 px-3 py-2 text-sm text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 ${
-                              errors.bio
-                                ? "focus:ring-red-500"
-                                : "focus:ring-blue-500"
-                            } focus:border-transparent min-h-[60px] sm:min-h-[80px]`}
-                          />
-                          {errors.bio && (
-                            <ErrorMessage message={errors.bio.message} />
-                          )}
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                          <div>
-                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
-                              Location
-                            </label>
-                            <Input
-                              {...register("location")}
-                              placeholder="Your location"
-                              className="text-sm"
-                              error={errors.location}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
-                              Phone
-                            </label>
-                            <Input
-                              {...register("phone", {
-                                pattern: {
-                                  value: /^[+]?[\d\s\-$$$$]+$/,
-                                  message: "Please enter a valid phone number",
-                                },
-                              })}
-                              placeholder="Your phone number"
-                              className="text-sm"
-                              error={errors.phone}
-                            />
-                            {errors.phone && (
-                              <ErrorMessage message={errors.phone.message} />
-                            )}
-                          </div>
-                          <div className="sm:col-span-2 lg:col-span-1">
-                            <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
-                              Department
-                            </label>
-                            <Input
-                              {...register("department")}
-                              placeholder="Your department"
-                              className="text-sm"
-                              error={errors.department}
-                            />
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-xs sm:text-sm font-medium text-gray-400 mb-1">
-                            Website
-                          </label>
-                          <Input
-                            {...register("website", {
-                              pattern: {
-                                value: /^https?:\/\/.+\..+/,
-                                message:
-                                  "Please enter a valid URL (e.g., https://example.com)",
-                              },
-                            })}
-                            placeholder="Your website"
-                            className="text-sm"
-                            error={errors.website}
-                          />
-                          {errors.website && (
-                            <ErrorMessage message={errors.website.message} />
-                          )}
-                        </div>
-                      </form>
-                    ) : (
-                      <>
-                        <div className="text-center sm:text-left">
-                          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                            {user?.name || "Unnamed User"}
-                          </h2>
-                          <div className="flex flex-wrap justify-center sm:justify-start items-center gap-3 sm:gap-4 text-gray-400 text-sm">
-                            <div className="flex items-center">
-                              <Mail className="h-4 w-4 mr-2 flex-shrink-0" />
-                              <span className="truncate">{user?.email}</span>
-                            </div>
-                            {user?.location && (
-                              <div className="flex items-center">
-                                <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                                <span className="truncate">
-                                  {user.location}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex items-center">
-                              <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                              <span>
-                                Joined{" "}
-                                {new Date(user?.createdAt).getFullYear() ||
-                                  "2023"}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        {user?.bio && (
-                          <p className="text-gray-300 leading-relaxed text-center sm:text-left text-sm sm:text-base">
-                            {user.bio}
-                          </p>
-                        )}
-                        {/* Contact Info */}
-                        <div className="flex flex-wrap justify-center sm:justify-start gap-3 sm:gap-4">
-                          {user?.phone && (
-                            <div className="flex items-center text-xs sm:text-sm text-gray-400">
-                              <Phone className="h-4 w-4 mr-2 flex-shrink-0" />
-                              <span className="truncate">{user.phone}</span>
-                            </div>
-                          )}
-                          {user?.website && (
-                            <div className="flex items-center text-xs sm:text-sm text-gray-400">
-                              <Globe className="h-4 w-4 mr-2 flex-shrink-0" />
-                              <Link
-                                href={user.website}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <span className="truncate hover:text-blue-400 transition-colors">
-                                  {user.website}
-                                </span>
-                              </Link>
-                            </div>
-                          )}
-                          {user?.department && (
-                            <div className="flex items-center text-xs sm:text-sm text-gray-400">
-                              <User className="h-4 w-4 mr-2 flex-shrink-0" />
-                              <span className="truncate">
-                                {user.department}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </>
-                    )}
-                    {/* Social Links */}
-                    <div className="flex justify-center sm:justify-start space-x-3">
-                      <button className="p-2 bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors">
-                        <Github className="h-4 w-4 sm:h-5 sm:w-5" />
-                      </button>
-                      <button className="p-2 bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors">
-                        <Twitter className="h-4 w-4 sm:h-5 sm:w-5" />
-                      </button>
-                      <button className="p-2 bg-gray-800/50 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors">
-                        <Linkedin className="h-4 w-4 sm:h-5 sm:w-5" />
-                      </button>
-                    </div>
+                ) : product.stock === 0 ? (
+                  "Out of Stock"
+                ) : !email ? (
+                  "Login to Add to Cart"
+                ) : (
+                  `Add to Cart - ${formatPrice(product.price * quantity)}`
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+        {/* Desktop/Laptop Layout */}
+        <div className="hidden lg:block">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Back Button */}
+            <div className="flex items-center space-x-2 text-sm text-gray-400 mb-8">
+              <Link href="/" className="hover:text-white">
+                Home
+              </Link>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+              <Link href="/products" className="hover:text-white">
+                Products
+              </Link>
+              {currentCategory && (
+                <>
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                  <Link
+                    href={`/products?category=${currentCategory.id}`}
+                    className="hover:text-white"
+                  >
+                    {currentCategory.name}
+                  </Link>
+                </>
+              )}
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+              <span>{product.name}</span>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
+              {/* Left Column - Images */}
+              <div className="space-y-6">
+                <div className="relative aspect-square bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-3xl overflow-hidden group">
+                  <Image
+                    src={
+                      productImages[selectedImageIndex] || "/placeholder.svg"
+                    }
+                    alt={product.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    priority
+                  />
+                  {product.trending && (
+                    <span className="absolute top-6 left-6 bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-sm font-bold px-4 py-2 rounded-full">
+                      Trending
+                    </span>
+                  )}
+                  {product.discount && (
+                    <span className="absolute top-6 right-6 bg-gradient-to-r from-red-500 to-pink-500 text-white text-sm font-bold px-4 py-2 rounded-full">
+                      -{product.discount}% OFF
+                    </span>
+                  )}
+
+                  {/* Action Buttons Overlay */}
+                  <div className="absolute top-6 right-6 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <button className="p-3 bg-gray-900/80 backdrop-blur-sm rounded-full text-gray-300 hover:text-white transition-colors">
+                      <Share className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={handleWishlistToggle}
+                      disabled={isUpdating || !email}
+                      className={`p-3 backdrop-blur-sm rounded-full transition-colors ${
+                        isInWishlist
+                          ? "bg-red-500/80 text-white hover:bg-red-600/80"
+                          : "bg-gray-900/80 text-gray-300 hover:text-white"
+                      } ${isUpdating ? "animate-pulse" : ""}`}
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${
+                          isInWishlist ? "fill-current" : ""
+                        }`}
+                      />
+                    </button>
                   </div>
                 </div>
-              </CardContent>
+
+                {/* Image Thumbnails */}
+                <div className="flex space-x-4 justify-center">
+                  {productImages.map((image, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setSelectedImageIndex(index)}
+                      className={`w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
+                        selectedImageIndex === index
+                          ? "border-purple-500 shadow-lg shadow-purple-500/25 scale-105"
+                          : "border-gray-600 hover:border-gray-500 hover:scale-105"
+                      }`}
+                    >
+                      <Image
+                        src={image || "/placeholder.svg"}
+                        alt={`${product.name} ${index + 1}`}
+                        width={80}
+                        height={80}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right Column - Product Info */}
+              <div className="space-y-8">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-purple-400 font-medium bg-purple-900/30 px-4 py-2 rounded-lg border border-purple-700/50">
+                      {product.supplier || "Premium Brand"}
+                    </span>
+                    <div className="flex items-center space-x-2">
+                      <button className="p-2 hover:bg-gray-700/50 rounded-full transition-colors">
+                        <Eye className="h-5 w-5 text-gray-400" />
+                      </button>
+                      <span className="text-sm text-gray-400">
+                        {Math.floor(Math.random() * 1000) + 100} views
+                      </span>
+                    </div>
+                  </div>
+
+                  <h1 className="text-4xl xl:text-5xl font-bold text-white mb-4 leading-tight">
+                    {product.name}
+                  </h1>
+
+                  <p className="text-gray-300 text-lg leading-relaxed">
+                    {description}
+                  </p>
+                </div>
+
+                {/* Rating */}
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-6 w-6 ${
+                          i < Math.floor(product.rating || 0)
+                            ? "fill-yellow-400 text-yellow-400"
+                            : "fill-gray-600 text-gray-600"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-lg font-medium text-white">
+                    {product.rating || 0}
+                  </span>
+                  <span className="text-gray-400">
+                    ({product.reviews || 0} reviews)
+                  </span>
+                </div>
+
+                {/* Price */}
+                <div className="flex items-center space-x-6">
+                  <span className="text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    {formatPrice(product.price)}
+                  </span>
+                  {product.originalPrice && (
+                    <span className="text-2xl text-gray-500 line-through">
+                      {formatPrice(product.originalPrice)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Stock Status */}
+                <div className="text-lg">
+                  {product.stock > 0 ? (
+                    <span className="text-green-400 flex items-center">
+                      <Check className="h-5 w-5 mr-2" />
+                      {product.stock} units in stock
+                    </span>
+                  ) : (
+                    <span className="text-red-400 flex items-center">
+                      <X className="h-5 w-5 mr-2" />
+                      Out of stock
+                    </span>
+                  )}
+                </div>
+
+                {/* Features */}
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-semibold text-white">
+                    Key Features
+                  </h3>
+                  <ul className="space-y-3">
+                    {productFeatures.map((feature, index) => (
+                      <li
+                        key={index}
+                        className="flex items-start space-x-3 text-gray-300"
+                      >
+                        <div className="w-2 h-2 bg-purple-400 rounded-full mt-3 flex-shrink-0"></div>
+                        <span className="text-lg">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Quantity and Add to Cart */}
+                <div className="space-y-6 border-t border-gray-700/50 pt-6">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xl font-medium text-white">
+                      Quantity
+                    </span>
+                    <div className="flex items-center space-x-4">
+                      <button
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="w-12 h-12 rounded-full border border-gray-600 flex items-center justify-center hover:bg-gray-700/50 transition-colors"
+                      >
+                        <Minus className="h-5 w-5 text-gray-300" />
+                      </button>
+                      <span className="w-12 text-center font-medium text-white text-xl">
+                        {quantity}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setQuantity(
+                            Math.min(product.stock || 99, quantity + 1)
+                          )
+                        }
+                        className="w-12 h-12 rounded-full border border-gray-600 flex items-center justify-center hover:bg-gray-700/50 transition-colors"
+                      >
+                        <Plus className="h-5 w-5 text-gray-300" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={product.stock === 0 || isUpdating || !email}
+                      className={`flex-1 py-4 rounded-2xl font-semibold text-white text-lg transition-all duration-300 ${
+                        product.stock > 0 && email && !isUpdating
+                          ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 hover:scale-105 shadow-lg shadow-purple-500/25"
+                          : "bg-gray-600 cursor-not-allowed"
+                      }`}
+                    >
+                      {isUpdating ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                          Adding to Cart...
+                        </div>
+                      ) : product.stock === 0 ? (
+                        "Out of Stock"
+                      ) : !email ? (
+                        "Login to Add to Cart"
+                      ) : (
+                        <>
+                          <ShoppingCart className="inline h-5 w-5 mr-2" />
+                          Add to Cart - {formatPrice(product.price * quantity)}
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => router.push("/cart")}
+                      className="px-6 py-4 rounded-2xl border border-gray-600 text-gray-300 hover:bg-gray-700/50 transition-colors relative"
+                    >
+                      <ShoppingCart className="h-6 w-6" />
+                      {cart.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-purple-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center">
+                          {cart.length}
+                        </span>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
-          </Card>
-
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            {stats.map((stat, index) => (
-              <StatCard key={index} {...stat} />
-            ))}
-          </div>
-
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
-            {/* Recent Activity */}
-            <RecentActivity isAdmin={isAdmin} recentActivities={activityData} />
-            {/* User Actions or Admin Tools */}
-            <Actions
-              isAdmin={isAdmin}
-              products={products}
-              adminStatsData={adminStatsData}
-              userActions={userActions}
-            />
           </div>
         </div>
       </div>

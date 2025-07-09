@@ -61,6 +61,8 @@ export async function PUT(req, context) {
     if (body.department) updateFields.department = body.department;
     if (body.location) updateFields.location = body.location;
     if (body.website) updateFields.website = body.website;
+    if (body.shippingAddress) updateFields.shippingAddress = body.shippingAddress;
+
 
     // Cart & Wishlist
     if (body.cart) updateFields.cart = body.cart;

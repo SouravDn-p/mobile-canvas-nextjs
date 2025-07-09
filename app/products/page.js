@@ -142,7 +142,7 @@ export default function ProductsPage() {
               </div>
 
               {/* Category Filter */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 ">
                 {categories.map((category) => (
                   <Button
                     key={category}
@@ -163,7 +163,7 @@ export default function ProductsPage() {
               </div>
 
               {/* Sort and View Controls */}
-              <div className="flex items-center gap-4 cursor-pointer">
+              <div className="flex  flex-wrap  items-center gap-4 cursor-pointer ">
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-40 bg-gray-700/50 border-gray-600/50 text-white cursor-pointer">
                     <SelectValue />

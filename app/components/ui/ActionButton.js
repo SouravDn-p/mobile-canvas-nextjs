@@ -9,7 +9,7 @@ const ActionButton = ({
 }) => (
   <Button
     variant={variant}
-    className="w-full justify-start h-auto p-4 flex-col items-start space-y-1"
+    className="w-full justify-start h-auto p-4 flex-col items-start space-y-1 cursor-pointer"
     onClick={onClick}
   >
     <div className="flex items-center w-full">

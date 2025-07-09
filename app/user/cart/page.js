@@ -75,7 +75,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove, onMoveToWishlist }) => {
                 <p className="text-sm text-gray-400">SKU: {item.productId}</p>
               </div>
               <div className="text-right mt-2 sm:mt-0">
-                <p className="text-xl font-bold text-white">${item.price}</p>
+                <p className="text-xl font-bold text-white">৳ {item.price}</p>
                 <p className="text-sm text-gray-400">per item</p>
               </div>
             </div>
@@ -109,7 +109,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove, onMoveToWishlist }) => {
                 <div className="text-sm text-gray-400">
                   Total:{" "}
                   <span className="text-white font-medium">
-                    ${(item.price * item.quantity).toFixed(2)}
+                    ৳ {(item.price * item.quantity).toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -169,33 +169,7 @@ export default function CartPage() {
   }
 
   const user = userData?.user;
-
-  // Mock cart data fallback
-  const mockCart = [
-    {
-      productId: "p1001",
-      name: "Wireless Mouse",
-      quantity: 2,
-      price: 19.99,
-      image: "/placeholder.svg?height=200&width=200",
-    },
-    {
-      productId: "p1003",
-      name: "USB-C Hub",
-      quantity: 1,
-      price: 34.99,
-      image: "/placeholder.svg?height=200&width=200",
-    },
-    {
-      productId: "p1005",
-      name: "Gaming Chair",
-      quantity: 1,
-      price: 199.99,
-      image: "/placeholder.svg?height=200&width=200",
-    },
-  ];
-
-  const cartItems = user?.cart && user.cart.length > 0 ? user.cart : mockCart;
+  const cartItems = user?.cart;
   const wishlist = user?.wishlist || [];
 
   const handleUpdateQuantity = async (productId, newQuantity) => {
@@ -286,8 +260,7 @@ export default function CartPage() {
     0
   );
   const shipping = subtotal > 50 ? 0 : 9.99;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+  const total = subtotal + shipping ;
 
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -401,24 +374,24 @@ export default function CartPage() {
                           Subtotal ({totalItems} items):
                         </span>
                         <span className="text-white">
-                          ${subtotal.toFixed(2)}
+                          ৳ {subtotal.toFixed(2)}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-400">Shipping:</span>
                         <span className="text-white">
-                          {shipping === 0 ? "Free" : `$${shipping.toFixed(2)}`}
+                          {shipping === 0 ? "Free" : `৳ ${shipping.toFixed(2)}`}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm">
+                      {/* <div className="flex justify-between text-sm">
                         <span className="text-gray-400">Tax:</span>
-                        <span className="text-white">${tax.toFixed(2)}</span>
-                      </div>
+                        <span className="text-white">৳{tax.toFixed(2)}</span>
+                      </div> */}
                       <div className="border-t border-gray-600 pt-3">
                         <div className="flex justify-between font-semibold text-lg">
                           <span className="text-white">Total:</span>
                           <span className="text-white">
-                            ${total.toFixed(2)}
+                            ৳ {total.toFixed(2)}
                           </span>
                         </div>
                       </div>
