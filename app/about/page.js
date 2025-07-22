@@ -100,7 +100,7 @@ export default function About() {
       year: "2022",
       title: "Innovation Award",
       description:
-        "Recognized as 'Best Mobile Retailer' by Tech Excellence Awards",
+        "Recognized as &apos;Best Mobile Retailer&apos; by Tech Excellence Awards",
       icon: "🏆",
     },
     {
@@ -129,14 +129,14 @@ export default function About() {
     {
       title: "Customer First",
       description:
-        "Your satisfaction is our priority. We're here to support you every step of the way.",
+        "Your satisfaction is our priority. We&apos;re here to support you every step of the way.",
       icon: "🤝",
       color: "from-green-500 to-teal-600",
     },
     {
       title: "Sustainability",
       description:
-        "We're committed to responsible business practices and environmental stewardship.",
+        "We&apos;re committed to responsible business practices and environmental stewardship.",
       icon: "🌱",
       color: "from-emerald-500 to-green-600",
     },
@@ -300,7 +300,7 @@ export default function About() {
                     unwavering.
                   </p>
                   <p className="text-gray-300 leading-relaxed">
-                    We're not just a retailer – we're your technology partner,
+                    We&apos;re not just a retailer – we&apos;re your technology partner,
                     helping you stay connected, productive, and entertained with
                     the devices that matter most to your life.
                   </p>

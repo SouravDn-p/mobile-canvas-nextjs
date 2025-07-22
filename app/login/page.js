@@ -135,7 +135,7 @@ export default function LoginPage() {
                 variant="google"
                 onClick={() =>
                   signIn("google", {
-                    callbackUrl: "http://localhost:3000/",
+                    callbackUrl: "/",
                   })
                 }
                 className="w-full cursor-pointer"
@@ -164,7 +164,7 @@ export default function LoginPage() {
                 variant="github"
                 onClick={() =>
                   signIn("github", {
-                    callbackUrl: "http://localhost:3000/",
+                    callbackUrl: "/",
                   })
                 }
                 className="w-full cursor-pointer"

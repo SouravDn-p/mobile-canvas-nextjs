@@ -109,8 +109,7 @@ const OrderCard = ({ order, isAdmin = false }) => {
                 {formatDate(order.createdAt || new Date())}
               </div>
               <div className="flex items-center">
-                <DollarSign className="h-4 w-4 mr-1" />$
-                {order.total?.toFixed(2) || "0.00"}
+                ৳ {order.total?.toFixed(2) || "0.00"}
               </div>
               <div className="flex items-center">
                 <ShoppingBag className="h-4 w-4 mr-1" />
@@ -167,7 +166,7 @@ const OrderCard = ({ order, isAdmin = false }) => {
                   </div>
                   <div className="text-right">
                     <p className="font-medium text-white">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      ৳ {(item.price * item.quantity).toFixed(2)}
                     </p>
                     <p className="text-sm text-gray-400">${item.price}/each</p>
                   </div>
@@ -181,20 +180,20 @@ const OrderCard = ({ order, isAdmin = false }) => {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Subtotal:</span>
                   <span className="text-white">
-                    ${(order.total * 0.9).toFixed(2)}
+                    ৳ {(order.total * 0.9).toFixed(2)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Shipping:</span>
                   <span className="text-white">
-                    ${(order.total * 0.1).toFixed(2)}
+                    ৳ {(order.total * 0.1).toFixed(2)}
                   </span>
                 </div>
                 <div className="border-t border-gray-600 pt-2">
                   <div className="flex justify-between font-semibold">
                     <span className="text-white">Total:</span>
                     <span className="text-white">
-                      ${order.total?.toFixed(2)}
+                      ৳ {order.total?.toFixed(2)}
                     </span>
                   </div>
                 </div>

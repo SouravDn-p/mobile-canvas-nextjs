@@ -32,9 +32,12 @@ import {
   Settings,
 } from "lucide-react";
 import Badge from "../components/ui/badge";
+import { useGetOrdersQuery } from "@/redux/api/productapi";
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
+  const { data: orderData, isLoading, error } = useGetOrdersQuery();
+
   const router = useRouter();
 
   useEffect(() => {
@@ -62,7 +65,7 @@ export default function AdminPage() {
     },
     {
       title: "Total Orders",
-      value: "2,350",
+      value: orderData.orders.length,
       change: "+180.1%",
       icon: ShoppingCart,
       color: "from-blue-500 to-cyan-400",
@@ -187,11 +190,11 @@ export default function AdminPage() {
           ))}
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="glass border-white/10">
+        <Tabs defaultValue="overview" className="space-y-6 ">
+          <TabsList className="glass border-white/10 border">
             <TabsTrigger
               value="overview"
-              className="data-[state=active]:bg-green-500/20 cursor-pointer"
+              className="data-[state=active]:bg-green-500/20 cursor-pointer "
             >
               Overview
             </TabsTrigger>

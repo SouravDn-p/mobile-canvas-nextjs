@@ -23,9 +23,9 @@ export async function GET(req) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
     // 🔒 Require authentication
-    if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // if (!token) {
+    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // }
 
     const products = await productCollection.find({}).toArray();
 

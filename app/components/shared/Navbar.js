@@ -117,10 +117,15 @@ export default function Navbar() {
       icon: <FaUserCircle className="w-4 h-4" />,
       label: "Your Profile",
     },
+    // {
+    //   to: "/dashboard",
+    //   icon: <MdOutlineDashboard className="w-4 h-4" />,
+    //   label: "Dashboard",
+    // },
     {
-      to: "/dashboard",
-      icon: <MdOutlineDashboard className="w-4 h-4" />,
-      label: "Dashboard",
+      to: "/user/cart",
+      label: "Cart Item",
+      icon: <Package className="w-4 h-4" />,
     },
     {
       to: "/user/orders",

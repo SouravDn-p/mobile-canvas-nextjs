@@ -209,7 +209,7 @@ export default function RegisterPage() {
                 variant="google"
                 onClick={() =>
                   signIn("google", {
-                    callbackUrl: "http://localhost:3000",
+                    callbackUrl: "/",
                   })
                 }
                 className="w-full cursor-pointer"
@@ -239,7 +239,7 @@ export default function RegisterPage() {
                 variant="github"
                 onClick={() =>
                   signIn("github", {
-                    callbackUrl: "http://localhost:3000",
+                    callbackUrl: "/",
                   })
                 }
                 className="w-full cursor-pointer"
