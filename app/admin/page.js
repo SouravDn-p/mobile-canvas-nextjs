@@ -65,7 +65,7 @@ const TabsTrigger = ({
 }) => (
   <button
     onClick={() => setActiveTab(value)}
-    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer ${
       activeTab === value
         ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30"
         : "text-gray-400 hover:text-white hover:bg-gray-700/50"
@@ -244,7 +244,7 @@ export default function AdminPage() {
       </div>
 
       <div className="max-w-7xl mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-6 cursor-pointer sm:space-y-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
             <div>
@@ -252,8 +252,8 @@ export default function AdminPage() {
                 Admin Dashboard
               </h1>
               <p className="mt-2 text-gray-400 text-sm sm:text-base">
-                Welcome back, {session?.user?.name ?? "Admin"}. Here&apos; what&apos;
-                happening with your store.
+                Welcome back, {session?.user?.name ?? "Admin"}. Here&apos;
+                what&apos; happening with your store.
               </p>
             </div>
             <div className="flex items-center space-x-3">
@@ -293,11 +293,7 @@ export default function AdminPage() {
                         {stat.title}
                       </p>
                       <p className="text-xl sm:text-2xl font-bold text-white mb-2">
-                        {isLoading ? (
-                          <div className="animate-pulse bg-gray-700 h-6 w-16 rounded"></div>
-                        ) : (
-                          stat.value || "0"
-                        )}
+                        {stat.value || "0"}
                       </p>
                       <div className="flex items-center text-xs text-green-400">
                         <TrendingUp className="h-3 w-3 mr-1" />
@@ -318,15 +314,15 @@ export default function AdminPage() {
           </div>
 
           {/* Tabs */}
-          <Tabs defaultValue="overview" className="space-y-6">
-            <TabsList className="w-full sm:w-auto">
+          <Tabs defaultValue="overview" className="space-y-6 cursor-pointer">
+            <TabsList className="w-full sm:w-auto cursor-pointer">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="orders">Recent Orders</TabsTrigger>
               <TabsTrigger value="products">Top Products</TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
-            <TabsContent value="overview" className="space-y-6">
+            <TabsContent value="overview" className="space-y-6 cursor-pointer">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Quick Actions */}
                 <Card className="hover:shadow-lg transition-all duration-300">
@@ -346,13 +342,15 @@ export default function AdminPage() {
                         Manage Products
                       </Button>
                     </Link>
-                    <Button
-                      variant="outline"
-                      className="w-full border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-500 bg-transparent"
-                    >
-                      <Users className="mr-2 h-4 w-4" />
-                      Manage Users
-                    </Button>
+                    <Link href="/admin/users" className="block">
+                      <Button
+                        variant="outline"
+                        className="w-full border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-500 bg-transparent"
+                      >
+                        <Users className="mr-2 h-4 w-4" />
+                        Manage Users
+                      </Button>
+                    </Link>
                     <Button
                       variant="outline"
                       className="w-full border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-500 bg-transparent"
@@ -437,7 +435,7 @@ export default function AdminPage() {
             </TabsContent>
 
             {/* Orders Tab */}
-            <TabsContent value="orders" className="space-y-6">
+            <TabsContent value="orders" className="space-y-6 cursor-pointer">
               <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="flex items-center text-white">
@@ -465,7 +463,7 @@ export default function AdminPage() {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {recentOrders.map((order, index) => (
+                      {recentOrders?.map((order, index) => (
                         <div
                           key={order.id || `order-${index}`}
                           className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 hover:bg-gray-800/50 transition-colors space-y-3 sm:space-y-0"
@@ -519,7 +517,7 @@ export default function AdminPage() {
             </TabsContent>
 
             {/* Products Tab */}
-            <TabsContent value="products" className="space-y-6">
+            <TabsContent value="products" className="space-y-6 cursor-pointer">
               <Card className="hover:shadow-lg transition-all duration-300">
                 <CardHeader>
                   <CardTitle className="flex items-center text-white">

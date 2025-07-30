@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
-import Button from "../ui/button";
 import CardContent from "../ui/cardContent";
 import { CardDescription, CardTitle } from "../ui/radix/card";
 import CardHeader from "../ui/cardHeader";
 import Card from "../ui/card";
-import { TabsContent } from "@radix-ui/react-tabs";
-import { Edit, Save, Calendar } from "lucide-react";
+import { Calendar } from "lucide-react";
 import {
   Avatar,
   AvatarFallback,
@@ -17,30 +15,27 @@ import Label from "../ui/Label";
 import { Textarea } from "../ui/textarea";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useGetUserByEmailQuery } from "@/redux/api/productapi";
 const ProfileTab = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { data: session, status } = useSession();
-  const handleSaveProfile = async () => {
-    setIsEditing(false);
-    // Here you would typically save to backend
-    try {
-      // Example API call to update user profile
-      // await fetch('/api/user', {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(userProfile)
-      // });
-    } catch (error) {
-      console.error("Error saving profile:", error);
-    }
-  };
+  const email = session?.user?.email;
+  const {
+    data: userData,
+    error,
+    isLoading,
+    refetch: refetchUser,
+  } = useGetUserByEmailQuery(email, {
+    skip: !email,
+  });
+  const user = userData?.user;
   const router = useRouter();
 
   const [userProfile, setUserProfile] = useState({
     name: "",
     email: "",
     phone: "+1 (555) 123-4567",
-    address: "123 Main Street, Anytown, ST 12345",
+    location: "123 Main Street, Anytown, ST 12345",
     bio: "Tech enthusiast and gadget lover",
     joinDate: "2023-01-15",
     avatar:
@@ -53,7 +48,6 @@ const ProfileTab = () => {
     }
   }, [status, router]);
 
-  // Update userProfile when session data becomes available
   useEffect(() => {
     if (session?.user) {
       setUserProfile((prev) => ({
@@ -61,9 +55,14 @@ const ProfileTab = () => {
         name: session.user.name || "",
         email: session.user.email || "",
         avatar: session.user.image || prev.avatar,
+        phone: user?.phone || "",
+        bio: user?.bio || "",
+        location: user?.location || "",
+        website: user?.website || "",
+        department: user?.department || "",
       }));
     }
-  }, [session]);
+  }, [session, userData, user]);
 
   return (
     <Card className="glass border-white/10">
@@ -75,24 +74,6 @@ const ProfileTab = () => {
               Manage your personal information
             </CardDescription>
           </div>
-          <Button
-            onClick={() =>
-              isEditing ? handleSaveProfile() : setIsEditing(true)
-            }
-            className="bg-gradient-to-r cursor-pointer from-green-500 to-emerald-400 hover:from-green-600 hover:to-emerald-500 text-black"
-          >
-            {isEditing ? (
-              <>
-                <Save className="mr-2 h-4 w-4 cursor-pointer" />
-                Save
-              </>
-            ) : (
-              <>
-                <Edit className="mr-2 h-4 w-4 cursor-pointer" />
-                Edit
-              </>
-            )}
-          </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -177,16 +158,16 @@ const ProfileTab = () => {
           </div>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="address" className="text-white">
+              <Label htmlFor="location" className="text-white">
                 Address
               </Label>
               <Input
-                id="address"
-                value={userProfile.address}
+                id="location"
+                value={userProfile.location}
                 onChange={(e) =>
                   setUserProfile({
                     ...userProfile,
-                    address: e.target.value,
+                    location: e.target.value,
                   })
                 }
                 disabled={!isEditing}

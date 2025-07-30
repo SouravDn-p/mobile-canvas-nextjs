@@ -38,7 +38,11 @@ import SettingTab from "../components/dashboard/SettingTab";
 import ProfileTab from "../components/dashboard/ProfileTab";
 import Link from "next/link";
 import Image from "next/image";
-import { useGetOrdersQuery } from "@/redux/api/productapi";
+import {
+  useGetOrdersByEmailQuery,
+  useGetOrdersQuery,
+} from "@/redux/api/productapi";
+import OrderCard from "../components/order/OrderCard";
 
 const Tabs = ({ children, defaultValue, className = "" }) => {
   const [activeTab, setActiveTab] = React.useState(defaultValue);
@@ -87,47 +91,19 @@ const TabsContent = ({ value, children, className = "", activeTab }) => {
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
+  const isAdmin = session?.user?.role === "admin";
   const router = useRouter();
-  const { data: orderData, isLoading, error } = useGetOrdersQuery();
-
-  // Mock top products data to avoid undefined errors
-  const topProducts = [
-    { name: "Wireless Headphones", sales: 150, revenue: "$13,499.50" },
-    { name: "Gaming Mouse", sales: 120, revenue: "$5,519.80" },
-    { name: "Mechanical Keyboard", sales: 80, revenue: "$10,399.20" },
-    { name: "Phone Case", sales: 200, revenue: "$3,998.00" },
-  ];
+  const {
+    data: orderData,
+    isLoading,
+    error,
+  } = useGetOrdersByEmailQuery(session?.user?.email, {
+    skip: !session?.user?.email || isAdmin,
+  });
 
   // Use orderData if available, otherwise fall back to mock orders
   const recentOrders =
-    orderData?.orders?.length > 0
-      ? orderData.orders.slice(0, 5)
-      : [
-          {
-            id: "ORD-001",
-            customer: "John Doe",
-            product: "Wireless Headphones",
-            amount: "$89.99",
-            status: "delivered",
-            date: "2024-01-15",
-          },
-          {
-            id: "ORD-002",
-            customer: "Jane Smith",
-            product: "Gaming Mouse",
-            amount: "$45.99",
-            status: "processing",
-            date: "2024-01-15",
-          },
-          {
-            id: "ORD-003",
-            customer: "Mike Johnson",
-            product: "Mechanical Keyboard",
-            amount: "$129.99",
-            status: "shipped",
-            date: "2024-01-14",
-          },
-        ];
+    orderData?.orders?.length > 0 ? orderData.orders.slice(0, 5) : [];
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -447,54 +423,28 @@ export default function DashboardPage() {
                         ))}
                       </div>
                     ) : (
-                      <div className="space-y-3">
-                        {recentOrders.map((order, index) => (
-                          <div
-                            key={order.id || `order-${index}`}
-                            className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 hover:bg-gray-800/50 transition-colors space-y-3 sm:space-y-0"
-                          >
-                            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
-                              <div>
-                                <p className="font-semibold text-white text-sm sm:text-base">
-                                  {order.id || "N/A"}
-                                </p>
-                                <p className="text-xs sm:text-sm text-gray-400">
-                                  {order.customer || "Unknown"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-white text-sm sm:text-base">
-                                  {order.product || "No product"}
-                                </p>
-                                <p className="text-xs sm:text-sm text-gray-400">
-                                  {order.amount || "$0"}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-between sm:justify-end space-x-3">
-                              <Badge
-                                className={`${getStatusColor(
-                                  order.status
-                                )} border text-xs`}
-                              >
-                                {getStatusIcon(order.status)}
-                                <span className="ml-1">
-                                  {(order.status || "N/A")
-                                    .charAt(0)
-                                    .toUpperCase() +
-                                    (order.status || "N/A").slice(1)}
-                                </span>
-                              </Badge>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                className="text-gray-400 hover:text-white"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
+                      <div className="space-y-4">
+                        {recentOrders.length === 0 ? (
+                          <Card className="p-6 ">
+                            <CardContent className="p-6 text-center">
+                              <Package className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                              <h3 className="text-xl font-semibold text-white mb-2">
+                                No Orders Found
+                              </h3>
+                              <p className="text-gray-400">
+                                You haven&apos;t placed any orders yet.
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ) : (
+                          recentOrders.map((order, index) => (
+                            <OrderCard
+                              key={order._id || index}
+                              order={order}
+                              isAdmin={isAdmin}
+                            />
+                          ))
+                        )}
                       </div>
                     )}
                   </CardContent>

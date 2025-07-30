@@ -244,7 +244,7 @@ export default function AdminProductsPage() {
               <button className="relative group overflow-hidden px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105">
                 <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-400 transition-all duration-300 group-hover:from-green-400 group-hover:to-emerald-300"></div>
                 <div className="absolute inset-0 bg-gradient-to-r from-green-500/80 to-emerald-400/80 blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300"></div>
-                <div className="relative flex items-center space-x-2 text-black font-semibold">
+                <div className="relative flex items-center space-x-2 text-black font-semibold cursor-pointer">
                   <Plus className="h-4 w-4" />
                   <span>Add Product</span>
                 </div>

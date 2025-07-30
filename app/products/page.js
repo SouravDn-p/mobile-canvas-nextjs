@@ -25,7 +25,7 @@ const categories = [
   "Wearables",
 ];
 
-const PRODUCTS_PER_PAGE = 8;
+const PRODUCTS_PER_PAGE = 12;
 
 export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");

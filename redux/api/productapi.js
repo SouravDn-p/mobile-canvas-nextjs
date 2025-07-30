@@ -10,7 +10,7 @@ export const productApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Product"],
+  tagTypes: ["Product", "Order"],
   endpoints: (builder) => ({
     getProducts: builder.query({
       query: () => "products",
@@ -68,6 +68,17 @@ export const productApi = createApi({
     getOrders: builder.query({
       query: () => "orders",
     }),
+    getOrderById: builder.query({
+      query: (id) => `orders/update/${id}`,
+    }),
+    updateOrder: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/orders/update/${id}`,
+        method: "PUT", // or PATCH if your API uses it
+        body: data,
+      }),
+      // invalidatesTags: ["Order"],
+    }),
     getOrdersByEmail: builder.query({
       query: (email) => `orders/${email}`,
     }),
@@ -92,6 +103,8 @@ export const {
   useGetUserByEmailQuery,
   useUpdateUserMutation,
   useGetOrdersQuery,
+  useGetOrderByIdQuery,
+  useUpdateOrderMutation,
   useGetOrdersByEmailQuery,
   usePlaceOrderMutation,
 } = productApi;
