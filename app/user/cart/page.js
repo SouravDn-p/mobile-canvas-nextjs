@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -17,8 +18,7 @@ import {
   useGetUserByEmailQuery,
   useUpdateUserMutation,
 } from "@/redux/api/productapi";
-
-// Import your existing components
+import Swal from "sweetalert2";
 import LoadingSpinner from "@/app/components/shared/LoadingSpinner";
 import AccessDenied from "@/app/components/shared/AccessDenied";
 import Button from "@/app/components/ui/button";
@@ -58,7 +58,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove, onMoveToWishlist }) => {
           <div className="w-full sm:w-24 h-48 sm:h-24 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
             <Image
               src={item.image || "/placeholder.svg?height=200&width=200"}
-              alt={item.name}
+              alt={item.name || "Product"}
               width={200}
               height={200}
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
@@ -70,12 +70,14 @@ const CartItem = ({ item, onUpdateQuantity, onRemove, onMoveToWishlist }) => {
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <h3 className="font-semibold text-white text-lg">
-                  {item.name}
+                  {item.name || "Unnamed Product"}
                 </h3>
                 <p className="text-sm text-gray-400">SKU: {item.productId}</p>
               </div>
               <div className="text-right mt-2 sm:mt-0">
-                <p className="text-xl font-bold text-white">৳ {item.price}</p>
+                <p className="text-xl font-bold text-white">
+                  ৳ {(item.price || 0).toFixed(2)}
+                </p>
                 <p className="text-sm text-gray-400">per item</p>
               </div>
             </div>
@@ -94,7 +96,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove, onMoveToWishlist }) => {
                     <Minus className="h-4 w-4" />
                   </Button>
                   <span className="w-12 text-center text-white font-medium">
-                    {item.quantity}
+                    {item.quantity || 1}
                   </span>
                   <Button
                     variant="outline"
@@ -109,7 +111,7 @@ const CartItem = ({ item, onUpdateQuantity, onRemove, onMoveToWishlist }) => {
                 <div className="text-sm text-gray-400">
                   Total:{" "}
                   <span className="text-white font-medium">
-                    ৳ {(item.price * item.quantity).toFixed(2)}
+                    ৳ {((item.price || 0) * (item.quantity || 1)).toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -152,24 +154,51 @@ export default function CartPage() {
   const {
     data: userData,
     isLoading,
+    error,
     refetch,
-  } = useGetUserByEmailQuery(email, {
-    skip: !email,
-  });
+  } = useGetUserByEmailQuery(email, { skip: !email });
   const [updateUser] = useUpdateUserMutation();
 
-  // Loading state
+  // SweetAlert2 notification
+  const showAlert = (message, type = "success") => {
+    Swal.fire({
+      text: message,
+      icon: type,
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      background: type === "success" ? "#16a34a" : "#dc2626",
+      color: "#fff",
+    });
+  };
+
+  // Loading, unauthenticated, or error states
   if (status === "loading" || isLoading) {
     return <LoadingSpinner />;
   }
-
-  // Unauthenticated state
   if (status === "unauthenticated") {
     return <AccessDenied />;
   }
+  if (error) {
+    return (
+      <Card variant="glass" className="p-6 text-center max-w-md mx-auto">
+        <h2 className="text-xl font-bold text-white mb-2">
+          Error Loading Cart
+        </h2>
+        <p className="text-gray-400 text-sm mb-4">
+          {error.message || "Failed to load cart data"}
+        </p>
+        <Button variant="default" onClick={() => window.location.reload()}>
+          Try Again
+        </Button>
+      </Card>
+    );
+  }
 
   const user = userData?.user;
-  const cartItems = user?.cart;
+  const cartItems = user?.cart || [];
   const wishlist = user?.wishlist || [];
 
   const handleUpdateQuantity = async (productId, newQuantity) => {
@@ -177,15 +206,11 @@ export default function CartPage() {
       const updatedCart = cartItems.map((item) =>
         item.productId === productId ? { ...item, quantity: newQuantity } : item
       );
-
-      await updateUser({
-        email,
-        data: { cart: updatedCart },
-      }).unwrap();
-
+      await updateUser({ email, data: { cart: updatedCart } }).unwrap();
+      showAlert("Quantity updated!");
       await refetch();
     } catch (error) {
-      console.error("Failed to update quantity:", error);
+      showAlert("Failed to update quantity", "error");
     }
   };
 
@@ -194,75 +219,67 @@ export default function CartPage() {
       const updatedCart = cartItems.filter(
         (item) => item.productId !== productId
       );
-
-      await updateUser({
-        email,
-        data: { cart: updatedCart },
-      }).unwrap();
-
+      await updateUser({ email, data: { cart: updatedCart } }).unwrap();
+      showAlert("Item removed from cart!");
       await refetch();
     } catch (error) {
-      console.error("Failed to remove item:", error);
+      showAlert("Failed to remove item", "error");
     }
   };
 
   const handleMoveToWishlist = async (item) => {
     try {
-      // Add to wishlist
       const wishlistItem = {
         productId: item.productId,
-        name: item.name,
-        price: item.price,
-        image: item.image,
+        name: item.name || "Unnamed Product",
+        price: item.price || 0,
+        image: item.image || "/placeholder.svg?height=200&width=200",
       };
-
       const updatedWishlist = [...wishlist, wishlistItem];
       const updatedCart = cartItems.filter(
         (cartItem) => cartItem.productId !== item.productId
       );
-
       await updateUser({
         email,
-        data: {
-          cart: updatedCart,
-          wishlist: updatedWishlist,
-        },
+        data: { cart: updatedCart, wishlist: updatedWishlist },
       }).unwrap();
-
+      showAlert("Item moved to wishlist!");
       await refetch();
     } catch (error) {
-      console.error("Failed to move to wishlist:", error);
+      showAlert("Failed to move to wishlist", "error");
     }
   };
 
   const handleClearCart = async () => {
     try {
-      await updateUser({
-        email,
-        data: { cart: [] },
-      }).unwrap();
-
+      await updateUser({ email, data: { cart: [] } }).unwrap();
+      showAlert("Cart cleared!");
       await refetch();
     } catch (error) {
-      console.error("Failed to clear cart:", error);
+      showAlert("Failed to clear cart", "error");
     }
   };
 
   const handleCheckout = () => {
     if (cartItems.length > 0) {
       router.push("/user/checkout");
+    } else {
+      showAlert("Your cart is empty", "error");
     }
   };
 
-  // Calculate totals
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  // Calculate totals with null checks
+  const subtotal = cartItems.length
+    ? cartItems.reduce(
+        (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
+        0
+      )
+    : 0;
   const shipping = subtotal > 50 ? 0 : 9.99;
-  const total = subtotal + shipping ;
-
-  const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const total = subtotal + shipping;
+  const totalItems = cartItems.length
+    ? cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0)
+    : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -300,7 +317,7 @@ export default function CartPage() {
               <Button
                 variant="outline"
                 onClick={handleClearCart}
-                className="text-red-400 hover:text-red-300 bg-transparent"
+                className="text-red-400 hover:text-red-300 bg-transparent cursor-pointer"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Clear Cart
@@ -310,20 +327,20 @@ export default function CartPage() {
 
           {cartItems.length === 0 ? (
             /* Empty Cart */
-            <Card>
+            <Card variant="glass">
               <CardContent className="p-8 text-center">
                 <ShoppingCart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">
                   Your Cart is Empty
                 </h3>
                 <p className="text-gray-400 mb-6">
-                  Looks like you haven &apos;t added any items to your cart yet.
+                  Looks like you haven&apos;t added any items to your cart yet.
                 </p>
                 <div className="space-y-3">
                   <Button
                     variant="default"
                     onClick={() => router.push("/products")}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto cursor-pointer"
                   >
                     <ShoppingBag className="h-4 w-4 mr-2" />
                     Browse Products
@@ -331,7 +348,7 @@ export default function CartPage() {
                   <Button
                     variant="outline"
                     onClick={() => router.push("/wishlist")}
-                    className="w-full sm:w-auto ml-0 sm:ml-3"
+                    className="w-full sm:w-auto ml-0 sm:ml-3 cursor-pointer"
                   >
                     <Heart className="h-4 w-4 mr-2" />
                     View Wishlist
@@ -345,7 +362,7 @@ export default function CartPage() {
               <div className="lg:col-span-2 space-y-4">
                 {cartItems.map((item, index) => (
                   <CartItem
-                    key={item.productId || index}
+                    key={item.productId || `item-${index}`}
                     item={item}
                     onUpdateQuantity={handleUpdateQuantity}
                     onRemove={handleRemoveItem}
@@ -356,14 +373,15 @@ export default function CartPage() {
 
               {/* Order Summary */}
               <div className="space-y-6">
-                <Card className="sticky top-4">
+                <Card variant="gradient" className="sticky top-4">
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <CreditCard className="mr-2 h-5 w-5 text-green-400" />
                       Order Summary
                     </CardTitle>
                     <CardDescription>
-                      {totalItems} items in your cart
+                      {totalItems} {totalItems === 1 ? "item" : "items"} in your
+                      cart
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -383,10 +401,6 @@ export default function CartPage() {
                           {shipping === 0 ? "Free" : `৳ ${shipping.toFixed(2)}`}
                         </span>
                       </div>
-                      {/* <div className="flex justify-between text-sm">
-                        <span className="text-gray-400">Tax:</span>
-                        <span className="text-white">৳{tax.toFixed(2)}</span>
-                      </div> */}
                       <div className="border-t border-gray-600 pt-3">
                         <div className="flex justify-between font-semibold text-lg">
                           <span className="text-white">Total:</span>
@@ -401,7 +415,7 @@ export default function CartPage() {
                     {subtotal < 50 && (
                       <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
                         <p className="text-sm text-blue-300">
-                          Add ${(50 - subtotal).toFixed(2)} more for free
+                          Add ৳{(50 - subtotal).toFixed(2)} more for free
                           shipping!
                         </p>
                       </div>
@@ -434,7 +448,7 @@ export default function CartPage() {
                 </Card>
 
                 {/* Recommended Actions */}
-                <Card>
+                <Card variant="gradient">
                   <CardHeader>
                     <CardTitle className="text-lg">
                       You might also like

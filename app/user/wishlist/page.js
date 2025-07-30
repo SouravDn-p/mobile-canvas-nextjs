@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -19,8 +20,7 @@ import {
   useGetUserByEmailQuery,
   useUpdateUserMutation,
 } from "@/redux/api/productapi";
-
-// Import your existing components
+import Swal from "sweetalert2";
 import LoadingSpinner from "@/app/components/shared/LoadingSpinner";
 import AccessDenied from "@/app/components/shared/AccessDenied";
 import Button from "@/app/components/ui/button";
@@ -54,13 +54,16 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
 
   if (viewMode === "list") {
     return (
-      <Card className="hover:shadow-lg transition-all duration-300">
+      <Card
+        className="hover:shadow-lg transition-all duration-300"
+        variant="gradient"
+      >
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
             <div className="w-full sm:w-24 h-48 sm:h-24 bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
               <Image
                 src={item.image || "/placeholder.svg?height=200&width=200"}
-                alt={item.name}
+                alt={item.name || "Unnamed Product"}
                 width={200}
                 height={200}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
@@ -71,10 +74,10 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h3 className="font-semibold text-white text-lg">
-                    {item.name}
+                    {item.name || "Unnamed Product"}
                   </h3>
                   <p className="text-sm text-gray-400">
-                    {item.category || "Electronics"}
+                    {item.category || "Uncategorized"}
                   </p>
                   <div className="flex items-center mt-1">
                     {[...Array(5)].map((_, i) => (
@@ -88,7 +91,7 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
                       />
                     ))}
                     <span className="text-sm text-gray-400 ml-2">
-                      ({item.reviews || 24} reviews)
+                      ({item.reviews || 0} reviews)
                     </span>
                   </div>
                 </div>
@@ -97,11 +100,11 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
                   <div className="flex items-center space-x-2">
                     {item.originalPrice && (
                       <span className="text-sm text-gray-400 line-through">
-                        ${item.originalPrice}
+                        ৳{item.originalPrice.toFixed(2)}
                       </span>
                     )}
                     <span className="text-xl font-bold text-white">
-                      ${item.price}
+                      ৳{(item.price || 0).toFixed(2)}
                     </span>
                   </div>
                   {item.discount && (
@@ -119,6 +122,7 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
                       variant="outline"
                       size="sm"
                       onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="cursor-pointer"
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
@@ -129,6 +133,7 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
                       variant="outline"
                       size="sm"
                       onClick={() => setQuantity(quantity + 1)}
+                      className="cursor-pointer"
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -139,7 +144,7 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
                   <Button
                     variant="default"
                     onClick={handleAddToCart}
-                    className="flex-1 sm:flex-none"
+                    className="flex-1 sm:flex-none cursor-pointer"
                   >
                     <ShoppingCart className="h-4 w-4 mr-2" />
                     Add to Cart
@@ -147,7 +152,7 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
                   <Button
                     variant="outline"
                     onClick={() => onRemove(item.productId)}
-                    className="text-red-400 hover:text-red-300"
+                    className="text-red-400 hover:text-red-300 cursor-pointer"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -161,13 +166,16 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
   }
 
   return (
-    <Card className="hover:shadow-lg transition-all duration-300 group">
+    <Card
+      className="hover:shadow-lg transition-all duration-300 group"
+      variant="gradient"
+    >
       <CardContent className="p-4">
         <div className="relative">
           <div className="w-full h-48 bg-gray-700 rounded-lg overflow-hidden mb-4">
             <Image
               src={item.image || "/placeholder.svg?height=200&width=200"}
-              alt={item.name}
+              alt={item.name || "Unnamed Product"}
               width={200}
               height={200}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -190,9 +198,11 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
 
         <div className="space-y-3">
           <div>
-            <h3 className="font-semibold text-white truncate">{item.name}</h3>
+            <h3 className="font-semibold text-white truncate">
+              {item.name || "Unnamed Product"}
+            </h3>
             <p className="text-sm text-gray-400">
-              {item.category || "Electronics"}
+              {item.category || "Uncategorized"}
             </p>
           </div>
 
@@ -208,7 +218,7 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
               />
             ))}
             <span className="text-sm text-gray-400 ml-2">
-              ({item.reviews || 24})
+              ({item.reviews || 0})
             </span>
           </div>
 
@@ -216,11 +226,11 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
             <div>
               {item.originalPrice && (
                 <span className="text-sm text-gray-400 line-through block">
-                  ${item.originalPrice}
+                  ৳{item.originalPrice.toFixed(2)}
                 </span>
               )}
               <span className="text-lg font-bold text-white">
-                ${item.price}
+                ৳{(item.price || 0).toFixed(2)}
               </span>
             </div>
           </div>
@@ -230,6 +240,7 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
               variant="outline"
               size="sm"
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
+              className="cursor-pointer"
             >
               <Minus className="h-4 w-4" />
             </Button>
@@ -240,6 +251,7 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
               variant="outline"
               size="sm"
               onClick={() => setQuantity(quantity + 1)}
+              className="cursor-pointer"
             >
               <Plus className="h-4 w-4" />
             </Button>
@@ -248,7 +260,7 @@ const WishlistItem = ({ item, onRemove, onAddToCart, viewMode = "grid" }) => {
           <Button
             variant="default"
             onClick={handleAddToCart}
-            className="w-full"
+            className="w-full cursor-pointer"
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
             Add to Cart
@@ -268,10 +280,9 @@ export default function WishlistPage() {
   const {
     data: userData,
     isLoading,
+    error,
     refetch,
-  } = useGetUserByEmailQuery(email, {
-    skip: !email,
-  });
+  } = useGetUserByEmailQuery(email, { skip: !email });
   const [updateUser] = useUpdateUserMutation();
 
   // State
@@ -279,78 +290,59 @@ export default function WishlistPage() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
-  const [selectedItems, setSelectedItems] = useState([]);
 
-  // Loading state
+  // SweetAlert2 notification
+  const showAlert = (message, type = "success") => {
+    Swal.fire({
+      text: message,
+      icon: type,
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      background: type === "success" ? "#16a34a" : "#dc2626",
+      color: "#fff",
+    });
+  };
+
+  // Loading, unauthenticated, or error states
   if (status === "loading" || isLoading) {
     return <LoadingSpinner />;
   }
-
-  // Unauthenticated state
   if (status === "unauthenticated") {
     return <AccessDenied />;
   }
+  if (error) {
+    return (
+      <Card variant="glass" className="p-6 text-center max-w-md mx-auto">
+        <h2 className="text-xl font-bold text-white mb-2">
+          Error Loading Wishlist
+        </h2>
+        <p className="text-gray-400 text-sm mb-4">
+          {error.message || "Failed to load wishlist data"}
+        </p>
+        <Button variant="default" onClick={() => window.location.reload()}>
+          Try Again
+        </Button>
+      </Card>
+    );
+  }
 
   const user = userData?.user;
+  const wishlistItems = user?.wishlist || [];
+  const cartItems = user?.cart || [];
 
-  // Mock wishlist data fallback
-  const mockWishlist = [
-    {
-      productId: "p1002",
-      name: "Mechanical Keyboard",
-      price: 49.99,
-      originalPrice: 69.99,
-      discount: 29,
-      category: "Electronics",
-      rating: 4,
-      reviews: 156,
-      image: "/placeholder.svg?height=200&width=200",
-    },
-    {
-      productId: "p1004",
-      name: "Wireless Headphones",
-      price: 89.99,
-      originalPrice: 119.99,
-      discount: 25,
-      category: "Audio",
-      rating: 5,
-      reviews: 89,
-      image: "/placeholder.svg?height=200&width=200",
-    },
-    {
-      productId: "p1006",
-      name: "Gaming Mouse",
-      price: 34.99,
-      category: "Gaming",
-      rating: 4,
-      reviews: 234,
-      image: "/placeholder.svg?height=200&width=200",
-    },
-    {
-      productId: "p1008",
-      name: "USB-C Cable",
-      price: 12.99,
-      originalPrice: 19.99,
-      discount: 35,
-      category: "Accessories",
-      rating: 4,
-      reviews: 67,
-      image: "/placeholder.svg?height=200&width=200",
-    },
-  ];
-
-  const wishlistItems = user?.wishlist;
-
-  // Filter items
+  // Filter items with null checks
   const filteredItems = wishlistItems.filter((item) => {
-    const matchesSearch = item.name
+    const matchesSearch = (item.name || "")
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesCategory =
-      categoryFilter === "all" || item.category === categoryFilter;
+      categoryFilter === "all" || (item.category || "") === categoryFilter;
     const matchesPrice = (() => {
       if (priceFilter === "all") return true;
-      const price = item.price;
+      const price = item.price || 0;
       switch (priceFilter) {
         case "under25":
           return price < 25;
@@ -364,88 +356,69 @@ export default function WishlistPage() {
           return true;
       }
     })();
-
     return matchesSearch && matchesCategory && matchesPrice;
   });
 
   // Get unique categories
   const categories = [
-    ...new Set(wishlistItems.map((item) => item.category)),
-  ].filter(Boolean);
+    ...new Set(wishlistItems.map((item) => item.category || "Uncategorized")),
+  ];
 
   const handleRemoveFromWishlist = async (productId) => {
     try {
       const updatedWishlist = wishlistItems.filter(
         (item) => item.productId !== productId
       );
-      await updateUser({
-        email,
-        data: { wishlist: updatedWishlist },
-      }).unwrap();
+      await updateUser({ email, data: { wishlist: updatedWishlist } }).unwrap();
+      showAlert("Item removed from wishlist!");
       await refetch();
     } catch (error) {
-      console.error("Failed to remove from wishlist:", error);
+      showAlert("Failed to remove from wishlist", "error");
     }
   };
 
   const handleAddToCart = async (item) => {
     try {
-      const currentCart = user?.cart || [];
-      const existingItem = currentCart.find(
+      const existingItem = cartItems.find(
         (cartItem) => cartItem.productId === item.productId
       );
-
       let updatedCart;
       if (existingItem) {
-        updatedCart = currentCart.map((cartItem) =>
+        updatedCart = cartItems.map((cartItem) =>
           cartItem.productId === item.productId
-            ? { ...cartItem, quantity: cartItem.quantity + item.quantity }
+            ? {
+                ...cartItem,
+                quantity: cartItem.quantity + (item.quantity || 1),
+              }
             : cartItem
         );
       } else {
         updatedCart = [
-          ...currentCart,
+          ...cartItems,
           {
             productId: item.productId,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            image: item.image,
+            name: item.name || "Unnamed Product",
+            price: item.price || 0,
+            quantity: item.quantity || 1,
+            image: item.image || "/placeholder.svg?height=200&width=200",
           },
         ];
       }
-
-      await updateUser({
-        email,
-        data: { cart: updatedCart },
-      }).unwrap();
+      await updateUser({ email, data: { cart: updatedCart } }).unwrap();
+      showAlert("Item added to cart!");
       await refetch();
     } catch (error) {
-      console.error("Failed to add to cart:", error);
+      showAlert("Failed to add to cart", "error");
     }
   };
 
-  const handleAddSelectedToCart = async () => {
-    for (const item of selectedItems) {
-      await handleAddToCart({ ...item, quantity: 1 });
-    }
-    setSelectedItems([]);
-  };
-
-  // const handleCheckoutSelected = () => {
-  //   if (selectedItems.length > 0) {
-  //     // Navigate to checkout with selected items
-  //     const checkoutData = selectedItems.map((item) => ({
-  //       ...item,
-  //       quantity: 1,
-  //     }));
-  //     localStorage.setItem("checkoutItems", JSON.stringify(checkoutData));
-  //     router.push("/user/checkout");
-  //   }
-  // };
-
-  const totalValue = filteredItems.reduce((sum, item) => sum + item.price, 0);
-  const onSaleItems = filteredItems.filter((item) => item.discount > 0).length;
+  // Calculate totals with null checks
+  const totalValue = filteredItems.length
+    ? filteredItems.reduce((sum, item) => sum + (item.price || 0), 0)
+    : 0;
+  const onSaleItems = filteredItems.filter(
+    (item) => (item.discount || 0) > 0
+  ).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
@@ -473,6 +446,7 @@ export default function WishlistPage() {
                 variant={viewMode === "grid" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setViewMode("grid")}
+                className="cursor-pointer"
               >
                 <Grid className="h-4 w-4" />
               </Button>
@@ -480,6 +454,7 @@ export default function WishlistPage() {
                 variant={viewMode === "list" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setViewMode("list")}
+                className="cursor-pointer"
               >
                 <List className="h-4 w-4" />
               </Button>
@@ -488,7 +463,7 @@ export default function WishlistPage() {
 
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-            <Card>
+            <Card variant="gradient">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -504,7 +479,7 @@ export default function WishlistPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card variant="gradient">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -512,7 +487,7 @@ export default function WishlistPage() {
                       Total Value
                     </p>
                     <p className="text-xl sm:text-2xl font-bold text-white">
-                      ${totalValue.toFixed(2)}
+                      ৳{totalValue.toFixed(2)}
                     </p>
                   </div>
                   <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 text-green-400" />
@@ -520,7 +495,7 @@ export default function WishlistPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card variant="gradient">
               <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -538,16 +513,15 @@ export default function WishlistPage() {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card variant="gradient">
               <CardContent className="p-4 sm:p-6">
-                <Link href={`/user/cart`}>
+                <Link href="/user/cart">
                   <Button
                     variant="default"
-                    // onClick={handleCheckoutSelected}
-                    disabled={user?.cart?.length === 0}
+                    disabled={cartItems.length === 0}
                     className="w-full h-full cursor-pointer"
                   >
-                    Checkout Selected
+                    View Cart ({cartItems.length})
                   </Button>
                 </Link>
               </CardContent>
@@ -555,7 +529,7 @@ export default function WishlistPage() {
           </div>
 
           {/* Filters */}
-          <Card>
+          <Card variant="gradient">
             <CardContent className="p-4 sm:p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
@@ -599,10 +573,10 @@ export default function WishlistPage() {
                     onChange={(e) => setPriceFilter(e.target.value)}
                   >
                     <option value="all">All Prices</option>
-                    <option value="under25">Under $25</option>
-                    <option value="25to50">$25 - $50</option>
-                    <option value="50to100">$50 - $100</option>
-                    <option value="over100">Over $100</option>
+                    <option value="under25">Under ৳25</option>
+                    <option value="25to50">৳25 - ৳50</option>
+                    <option value="50to100">৳50 - ৳100</option>
+                    <option value="over100">Over ৳100</option>
                   </Select>
                 </div>
 
@@ -614,7 +588,7 @@ export default function WishlistPage() {
                       setCategoryFilter("all");
                       setPriceFilter("all");
                     }}
-                    className="w-full"
+                    className="w-full cursor-pointer"
                   >
                     <Filter className="h-4 w-4 mr-2" />
                     Clear Filters
@@ -626,7 +600,7 @@ export default function WishlistPage() {
 
           {/* Wishlist Items */}
           {filteredItems.length === 0 ? (
-            <Card>
+            <Card variant="glass">
               <CardContent className="p-8 text-center">
                 <Heart className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">
@@ -642,6 +616,7 @@ export default function WishlistPage() {
                 <Button
                   variant="default"
                   onClick={() => router.push("/products")}
+                  className="cursor-pointer"
                 >
                   Browse Products
                 </Button>
@@ -657,7 +632,7 @@ export default function WishlistPage() {
             >
               {filteredItems.map((item, index) => (
                 <WishlistItem
-                  key={item.productId || index}
+                  key={item.productId || `item-${index}`}
                   item={item}
                   onRemove={handleRemoveFromWishlist}
                   onAddToCart={handleAddToCart}

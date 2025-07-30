@@ -79,74 +79,72 @@ const orderHistory = [
 
 const TabsContents = ({ getStatusIcon, getStatusColor }) => {
   return (
-    <TabsContent value="orders" className="space-y-6">
-      <Card className="glass border-white/10">
-        <CardHeader>
-          <CardTitle className="text-white">Order History</CardTitle>
-          <CardDescription className="text-gray-400">
-            View and track your orders
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {orderHistory.map((order) => (
-              <div
-                key={order.id}
-                className="glass rounded-lg p-4 border border-white/5"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-4">
-                    <div>
-                      <h4 className="font-semibold text-white">{order.id}</h4>
-                      <p className="text-sm text-gray-400">
-                        {new Date(order.date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      {getStatusIcon(order.status)}
-                      <Badge className={getStatusColor(order.status)}>
-                        {order.status.charAt(0).toUpperCase() +
-                          order.status.slice(1)}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-white">
-                      ${order.total.toFixed(2)}
-                    </p>
+    <Card className="glass border-white/10">
+      <CardHeader>
+        <CardTitle className="text-white">Order History</CardTitle>
+        <CardDescription className="text-gray-400">
+          View and track your orders
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {orderHistory.map((order) => (
+            <div
+              key={order.id}
+              className="glass rounded-lg p-4 border border-white/5"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-4">
+                  <div>
+                    <h4 className="font-semibold text-white">{order.id}</h4>
                     <p className="text-sm text-gray-400">
-                      {order.items.length} item(s)
+                      {new Date(order.date).toLocaleDateString()}
                     </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {getStatusIcon(order.status)}
+                    <Badge className={getStatusColor(order.status)}>
+                      {order.status.charAt(0).toUpperCase() +
+                        order.status.slice(1)}
+                    </Badge>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  {order.items.map((item, index) => (
-                    <div key={index} className="flex items-center space-x-3">
-                      <Image
-                        width={500}
-                        height={500}
-                        src={item.image}
-                        alt={item.name}
-                        className="w-12 h-12 object-cover rounded-lg"
-                      />
-                      <div className="flex-1">
-                        <p className="text-white text-sm">{item.name}</p>
-                        <p className="text-gray-400 text-xs">
-                          Qty: {item.quantity}
-                        </p>
-                      </div>
-                      <p className="text-white text-sm">
-                        ${item.price.toFixed(2)}
-                      </p>
-                    </div>
-                  ))}
+                <div className="text-right">
+                  <p className="font-semibold text-white">
+                    ${order.total.toFixed(2)}
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    {order.items.length} item(s)
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </TabsContent>
+              <div className="space-y-2">
+                {order.items.map((item, index) => (
+                  <div key={index} className="flex items-center space-x-3">
+                    <Image
+                      width={500}
+                      height={500}
+                      src={item.image}
+                      alt={item.name}
+                      className="w-12 h-12 object-cover rounded-lg"
+                    />
+                    <div className="flex-1">
+                      <p className="text-white text-sm">{item.name}</p>
+                      <p className="text-gray-400 text-xs">
+                        Qty: {item.quantity}
+                      </p>
+                    </div>
+                    <p className="text-white text-sm">
+                      ${item.price.toFixed(2)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
