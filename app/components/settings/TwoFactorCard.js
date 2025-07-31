@@ -42,7 +42,7 @@ export const TwoFactorCard = ({ twoFactor, onToggle }) => {
           <div className="flex-1 pr-6">
             <h4 className="text-white font-medium mb-2">Email-based 2FA</h4>
             <p className="text-gray-400 text-sm leading-relaxed mb-4">
-              When enabled, you'll receive a verification code via email each
+              When enabled, you&apos;ll receive a verification code via email each
               time you sign in. This adds an extra layer of protection to your
               account.
             </p>
