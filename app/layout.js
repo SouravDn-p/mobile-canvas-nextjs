@@ -4,7 +4,6 @@ import "./globals.css";
 import SessionWrapper from "./components/SessionWrapper";
 import Footer from "./components/shared/Footer";
 import ClientProvider from "./components/ClientProvider";
-import TestNavbar from "./components/shared/TestNavbar";
 import Navbar from "./components/shared/Navbar";
 
 const inter = Inter({ subsets: ["latin"] });

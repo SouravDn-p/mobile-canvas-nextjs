@@ -9,6 +9,7 @@ import {
   useUpdateUserMutation,
 } from "@/redux/api/productapi";
 import Button from "../ui/button";
+import Swal from "sweetalert2";
 
 export default function ProductCard({ product }) {
   const { data: session } = useSession();
@@ -79,8 +80,22 @@ export default function ProductCard({ product }) {
       }).unwrap();
 
       await refetch();
+      Swal.fire({
+        icon: "success",
+        title: isInWishlist ? "Removed from Wishlist" : "Added to Wishlist",
+        text: `${product.name} has been ${
+          isInWishlist ? "removed from" : "added to"
+        } your wishlist.`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error("Failed to update wishlist:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to update wishlist. Please try again.",
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -119,8 +134,20 @@ export default function ProductCard({ product }) {
       }).unwrap();
 
       await refetch();
+      Swal.fire({
+        icon: "success",
+        title: "Added to Cart",
+        text: `${product.name} has been added to your cart.`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error("Failed to add to cart:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to add product to cart. Please try again.",
+      });
     } finally {
       setIsUpdating(false);
     }

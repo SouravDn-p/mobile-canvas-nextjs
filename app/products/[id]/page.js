@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useGetProductByIdQuery } from "@/redux/api/productapi";
+import Swal from "sweetalert2";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import {
@@ -157,8 +158,22 @@ export default function ProductDetails() {
       }).unwrap();
 
       await refetch();
+      Swal.fire({
+        icon: "success",
+        title: isInWishlist ? "Removed from Wishlist" : "Added to Wishlist",
+        text: `${product.name} has been ${
+          isInWishlist ? "removed from" : "added to"
+        } your wishlist.`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error("Failed to update wishlist:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to update wishlist. Please try again.",
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -195,8 +210,21 @@ export default function ProductDetails() {
       }).unwrap();
 
       await refetch();
+
+      Swal.fire({
+        icon: "success",
+        title: "Added to Cart",
+        text: `${product.name} has been added to your cart.`,
+        timer: 2000,
+        showConfirmButton: false,
+      });
     } catch (error) {
       console.error("Failed to add to cart:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to add product to cart. Please try again.",
+      });
     } finally {
       setIsUpdating(false);
     }
@@ -715,7 +743,7 @@ export default function ProductDetails() {
                     <button
                       onClick={handleAddToCart}
                       disabled={product.stock === 0 || isUpdating || !email}
-                      className={`flex-1 cursor-pointer py-4 rounded-2xl cursor-pointer font-semibold text-white text-lg transition-all duration-300 ${
+                      className={`flex-1 cursor-pointer py-4 rounded-2xl font-semibold text-white text-lg transition-all duration-300 ${
                         product.stock > 0 && email && !isUpdating
                           ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 hover:scale-105 shadow-lg shadow-purple-500/25"
                           : "bg-gray-600 cursor-not-allowed"
@@ -739,7 +767,7 @@ export default function ProductDetails() {
                     </button>
 
                     <button
-                      onClick={() => router.push("/cart")}
+                      onClick={() => router.push("/user/cart")}
                       className="px-6 py-4 rounded-2xl border border-gray-600 text-gray-300 hover:bg-gray-700/50 transition-colors relative cursor-pointer"
                     >
                       <ShoppingCart className="h-6 w-6" />
