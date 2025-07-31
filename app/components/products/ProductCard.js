@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import Image from "next/image";
+ import Image from "next/image";
 import Link from "next/link";
 import { Star, ShoppingCart, Eye, Heart } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -29,7 +29,7 @@ export default function ProductCard({ product }) {
     name,
     price,
     originalPrice,
-    image,
+     image,
     rating,
     reviews,
     category,
@@ -65,7 +65,7 @@ export default function ProductCard({ product }) {
           name,
           price,
           originalPrice,
-          image,
+           image,
           category,
           rating,
           reviews,
@@ -123,7 +123,7 @@ export default function ProductCard({ product }) {
           name,
           price,
           quantity: 1,
-          image,
+           image,
         };
         updatedCart = [...cart, cartItem];
       }
@@ -162,7 +162,13 @@ export default function ProductCard({ product }) {
         {/* Product Image */}
         <div className="relative aspect-square overflow-hidden">
           <Image
-            src={image || "/placeholder.svg"}
+            src={
+              image ||
+              product?.images?.[0]?.url ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                product?.name || "Product"
+              )}&background=random`
+            }
             alt={name}
             width={400}
             height={400}

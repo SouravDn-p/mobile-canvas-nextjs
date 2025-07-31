@@ -23,6 +23,7 @@ const categories = [
   "Laptops",
   "Audio",
   "Wearables",
+  "Mobile Cover",
 ];
 
 const PRODUCTS_PER_PAGE = 12;
@@ -31,7 +32,6 @@ export default function ProductsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("name");
-  const [viewMode, setViewMode] = useState("grid");
   const [currentPage, setCurrentPage] = useState(1);
   const [priceRange, setPriceRange] = useState([0, 3000]);
   useEffect(() => {
@@ -142,7 +142,7 @@ export default function ProductsPage() {
               </div>
 
               {/* Category Filter */}
-              <div className="flex flex-wrap gap-2 ">
+              <div className="md:flex md:flex-wrap md:gap-2  grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                 {categories.map((category) => (
                   <Button
                     key={category}
@@ -153,93 +153,54 @@ export default function ProductsPage() {
                     onClick={() => setSelectedCategory(category)}
                     className={
                       selectedCategory === category
-                        ? "bg-gradient-to-r cursor-pointer from-purple-500 to-cyan-500 text-white hover:from-purple-600 hover:to-cyan-600"
-                        : "border-gray-600/50 cursor-pointer text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                        ? "bg-gradient-to-r cursor-pointer w-full sm:w-fit p-2 from-purple-500 to-cyan-500 text-white hover:from-purple-600 hover:to-cyan-600"
+                        : "border-gray-600/50 cursor-pointer  w-full sm:w-fit text-gray-300 hover:bg-gray-700/50 hover:text-white"
                     }
                   >
                     {category}
                   </Button>
                 ))}
-              </div>
-
-              {/* Sort and View Controls */}
-              <div className="flex  flex-wrap  items-center gap-4 cursor-pointer ">
-                <Select value={sortBy} onValueChange={setSortBy}>
-                  <SelectTrigger className="w-40 bg-gray-700/50 border-gray-600/50 text-white cursor-pointer">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-700 cursor-pointer">
-                    <SelectItem className={"cursor-pointer"} value="name">
-                      Name
-                    </SelectItem>
-                    <SelectItem className={"cursor-pointer"} value="price-low">
-                      Price: Low to High
-                    </SelectItem>
-                    <SelectItem className={"cursor-pointer"} value="price-high">
-                      Price: High to Low
-                    </SelectItem>
-                    <SelectItem className={"cursor-pointer"} value="rating">
-                      Rating
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <div >
+                  <Select
+                    value={sortBy}
+                    onValueChange={setSortBy}
+                    className="w-full "
+                  >
+                    <SelectTrigger className="w-40 bg-gray-700/50 border-gray-600/50 text-white cursor-pointer">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-800 border-gray-700 cursor-pointer">
+                      <SelectItem className={"cursor-pointer"} value="name">
+                        Name
+                      </SelectItem>
+                      <SelectItem
+                        className={"cursor-pointer"}
+                        value="price-low"
+                      >
+                        Price: Low to High
+                      </SelectItem>
+                      <SelectItem
+                        className={"cursor-pointer"}
+                        value="price-high"
+                      >
+                        Price: High to Low
+                      </SelectItem>
+                      <SelectItem className={"cursor-pointer"} value="rating">
+                        Rating
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowPriceFilter(!showPriceFilter)}
-                  className="border-gray-600/50 text-gray-300 cursor-pointer hover:bg-gray-700/50 hover:text-white"
+                  className="border-gray-600/50 w-full col-span-2 md:col-span-1 text-gray-300 cursor-pointer hover:bg-gray-700/50 hover:text-white"
                 >
                   <DollarSign className="h-4 w-4 mr-2" />
                   Price Range
                 </Button>
-
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setViewMode("grid")}
-                    className={`p-2 rounded-lg transition-colors cursor-pointer ${
-                      viewMode === "grid"
-                        ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                        : "text-gray-400 hover:text-gray-300 hover:bg-gray-700/30"
-                    }`}
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                      />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => setViewMode("list")}
-                    className={`p-2 rounded-lg transition-colors cursor-pointer ${
-                      viewMode === "list"
-                        ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                        : "text-gray-400 hover:text-gray-300 hover:bg-gray-700/30"
-                    }`}
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                      />
-                    </svg>
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -338,11 +299,7 @@ export default function ProductsPage() {
 
         {/* Products Grid */}
         <div
-          className={`grid gap-8 mb-12 ${
-            viewMode === "grid"
-              ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-              : "grid-cols-1"
-          }`}
+          className={`grid gap-8 mb-12 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`}
         >
           {currentProducts.map((product) => (
             <ProductCard key={product._id} product={product} />

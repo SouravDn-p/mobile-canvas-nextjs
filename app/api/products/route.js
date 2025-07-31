@@ -60,6 +60,7 @@ export async function POST(request) {
       sku,
       supplier,
       status,
+      features,
       specifications,
       images,
     } = body;
@@ -86,9 +87,11 @@ export async function POST(request) {
       status,
       specifications,
       images,
-
+      features,
+      rating: 4.5 || 0,
+      reviews: [],
       price: parseFloat(price),
-      createdAt: new Date(),
+      dateAdded: new Date().toISOString(),
     });
 
     return NextResponse.json({

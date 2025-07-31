@@ -122,7 +122,7 @@ const BlogPage = () => {
             <CardContent className="pt-6">
               <div className="space-y-4">
                 {/* Search Bar */}
-                <form onSubmit={handleSearch} className="flex gap-4">
+                <form onSubmit={handleSearch} className="flex gap-4 ">
                   <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <input
@@ -142,8 +142,8 @@ const BlogPage = () => {
                 </form>
 
                 {/* Filter Controls */}
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div className="flex items-center space-x-4">
+                <div className="flex flex-wrap items-center  justify-between gap-4">
+                  <div className="md:flex grid grid-cols-1  items-center  w-full md:w-fit gap-2 md:space-x-4">
                     <Button
                       variant="outline"
                       size="sm"
@@ -160,12 +160,12 @@ const BlogPage = () => {
                     </Button>
 
                     {/* Sort Options */}
-                    <div className="flex items-center space-x-2">
+                    <div className="md:flex items-center space-x-2 grid grid-cols-2 w-full flex-wrap gap-2">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleSortChange("createdAt")}
-                        className={`border-gray-600 hover:bg-gray-700/50 bg-transparent ${
+                        className={`border-gray-600 hover:bg-gray-700/50 bg-transparent  ${
                           sortBy === "createdAt"
                             ? "text-purple-400 border-purple-500/50"
                             : "text-gray-300"
@@ -225,7 +225,7 @@ const BlogPage = () => {
                   </div>
 
                   {/* View Mode Toggle */}
-                  <div className="flex items-center space-x-2">
+                  <div className=" md:flex items-center space-x-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -260,7 +260,7 @@ const BlogPage = () => {
                       <h3 className="text-sm font-medium text-gray-300">
                         Categories
                       </h3>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="grid grid-cols-1 md:flex md:flex-wrap gap-2">
                         {categories.map((category) => (
                           <Button
                             key={category}

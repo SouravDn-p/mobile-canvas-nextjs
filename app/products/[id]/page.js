@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import { useGetProductByIdQuery } from "@/redux/api/productapi";
 import Swal from "sweetalert2";
@@ -17,9 +16,14 @@ import {
   ChevronRight,
   Plus,
   Minus,
-  Share,
   Eye,
   X,
+  Share,
+  Facebook,
+  Twitter,
+  Linkedin,
+  Copy,
+  Zap,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import {
@@ -46,13 +50,132 @@ const formatPrice = (price) => {
   }).format(price);
 };
 
-// const formatPrice = (price) => {
-//   return new Intl.NumberFormat("bn-BD", {
-//     style: "currency",
-//     currency: "BDT",
-//     minimumFractionDigits: 2,
-//   }).format(price);
-// };
+const ShareButton = ({ productName }) => {
+  const [showMenu, setShowMenu] = useState(false);
+  const currentUrl = typeof window !== "undefined" ? window.location.href : "";
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(currentUrl);
+      Swal.fire({
+        icon: "success",
+        title: "Link Copied!",
+        text: "Product link copied to clipboard",
+        timer: 2000,
+        showConfirmButton: false,
+        toast: true,
+        position: "top-end",
+      });
+      setShowMenu(false);
+    } catch (err) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to copy link.",
+        toast: true,
+        position: "top-end",
+      });
+    }
+  };
+
+  const shareOptions = [
+    {
+      name: "Facebook",
+      icon: Facebook,
+      color: "text-blue-500 hover:text-blue-600",
+      bgColor: "hover:bg-blue-50",
+      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        currentUrl
+      )}`,
+    },
+    {
+      name: "Twitter",
+      icon: Twitter,
+      color: "text-sky-500 hover:text-sky-600",
+      bgColor: "hover:bg-sky-50",
+      url: `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+        currentUrl
+      )}&text=Check out this amazing product: ${encodeURIComponent(
+        productName
+      )}`,
+    },
+    {
+      name: "LinkedIn",
+      icon: Linkedin,
+      color: "text-blue-700 hover:text-blue-800",
+      bgColor: "hover:bg-blue-50",
+      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+        currentUrl
+      )}`,
+    },
+  ];
+
+  return (
+    <div className="relative inline-block text-left cursor-pointer">
+      <button
+        className="p-3 bg-white/10 backdrop-blur-sm rounded-full border border-white/20 hover:bg-white/20 transition-all duration-300 group"
+        onClick={() => setShowMenu(!showMenu)}
+      >
+        <Share className="h-5 w-5 text-white group-hover:scale-110 transition-transform duration-300" />
+      </button>
+
+      {showMenu && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 z-10 cursor-pointer"
+            onClick={() => setShowMenu(false)}
+          />
+
+          {/* Share Menu */}
+          <div className="absolute z-20  right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in slide-in-from-top-2 duration-200">
+            <div className="p-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                Share this product
+              </h3>
+
+              {/* Social Share Options */}
+              <div className="space-y-2">
+                {shareOptions.map((option) => (
+                  <a
+                    key={option.name}
+                    href={option.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${option.bgColor} group`}
+                    onClick={() => setShowMenu(false)}
+                  >
+                    <div
+                      className={`p-2 rounded-lg bg-gray-100 group-hover:bg-white transition-colors duration-200`}
+                    >
+                      <option.icon className={`h-5 w-5 ${option.color}`} />
+                    </div>
+                    <span className="font-medium text-gray-700 group-hover:text-gray-900">
+                      Share on {option.name}
+                    </span>
+                  </a>
+                ))}
+
+                {/* Copy Link Option */}
+                <button
+                  onClick={handleCopyLink}
+                  className="w-full flex items-center cursor-pointer gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all duration-200 group"
+                >
+                  <div className="p-2 rounded-lg bg-gray-100  group-hover:bg-white transition-colors duration-200">
+                    <Copy className="h-5 w-5 text-gray-600 group-hover:text-gray-800 " />
+                  </div>
+                  <span className="font-medium text-gray-700 group-hover:text-gray-900">
+                    Copy Link
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -71,6 +194,7 @@ export default function ProductDetails() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isBuyingNow, setIsBuyingNow] = useState(false);
 
   const product = data?.data;
   const user = userData?.user;
@@ -85,12 +209,10 @@ export default function ProductDetails() {
   if (error || !product) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
-        {/* Background Effects */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-red-500/10 rounded-full blur-3xl"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
         </div>
-
         <div className="text-center max-w-md relative z-10">
           <div className="text-6xl mb-4">🔍</div>
           <h3 className="text-2xl font-bold text-white mb-2">
@@ -116,14 +238,27 @@ export default function ProductDetails() {
     product.description ||
     `Discover the ${product.name}, a high-quality product with excellent performance and reliability.`;
 
-  // Mock additional images for demonstration
   const productImages = [
     product?.image ||
       product?.images?.[0]?.url ||
-      "/placeholder.svg?height=600&width=600",
-    "/placeholder.svg?height=600&width=600",
-    "/placeholder.svg?height=600&width=600",
-    "/placeholder.svg?height=600&width=600",
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        product?.name || "Product"
+      )}&background=random`,
+    product?.images?.[1]?.url ||
+      product?.image ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        product?.name || "Product"
+      )}&background=random`,
+    product?.images?.[2]?.url ||
+      product?.image ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        product?.name || "Product"
+      )}&background=random`,
+    product?.images?.[3]?.url ||
+      product?.image ||
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        product?.name || "Product"
+      )}&background=random`,
   ];
 
   const handleWishlistToggle = async () => {
@@ -158,6 +293,7 @@ export default function ProductDetails() {
       }).unwrap();
 
       await refetch();
+
       Swal.fire({
         icon: "success",
         title: isInWishlist ? "Removed from Wishlist" : "Added to Wishlist",
@@ -166,6 +302,8 @@ export default function ProductDetails() {
         } your wishlist.`,
         timer: 2000,
         showConfirmButton: false,
+        toast: true,
+        position: "top-end",
       });
     } catch (error) {
       console.error("Failed to update wishlist:", error);
@@ -173,6 +311,8 @@ export default function ProductDetails() {
         icon: "error",
         title: "Error",
         text: "Failed to update wishlist. Please try again.",
+        toast: true,
+        position: "top-end",
       });
     } finally {
       setIsUpdating(false);
@@ -213,10 +353,12 @@ export default function ProductDetails() {
 
       Swal.fire({
         icon: "success",
-        title: "Added to Cart",
+        title: "Added to Cart!",
         text: `${product.name} has been added to your cart.`,
         timer: 2000,
         showConfirmButton: false,
+        toast: true,
+        position: "top-end",
       });
     } catch (error) {
       console.error("Failed to add to cart:", error);
@@ -224,23 +366,82 @@ export default function ProductDetails() {
         icon: "error",
         title: "Error",
         text: "Failed to add product to cart. Please try again.",
+        toast: true,
+        position: "top-end",
       });
     } finally {
       setIsUpdating(false);
     }
   };
 
+  const handleBuyNow = async () => {
+    if (!email || isBuyingNow) return;
+
+    setIsBuyingNow(true);
+    try {
+      // First add to cart
+      const existingItem = cart.find((item) => item.productId === product._id);
+      let updatedCart;
+
+      if (existingItem) {
+        updatedCart = cart.map((item) =>
+          item.productId === product._id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
+      } else {
+        const cartItem = {
+          productId: product._id,
+          name: product.name,
+          price: product.price,
+          quantity: quantity,
+          image: product.image,
+        };
+        updatedCart = [...cart, cartItem];
+      }
+
+      await updateUser({
+        email,
+        data: { cart: updatedCart },
+      }).unwrap();
+
+      await refetch();
+
+      // Show success message and redirect to checkout
+      Swal.fire({
+        icon: "success",
+        title: "Redirecting to Checkout!",
+        text: "Product added to cart. Taking you to checkout...",
+        timer: 1500,
+        showConfirmButton: false,
+        toast: true,
+        position: "top-end",
+      });
+
+      // Redirect to checkout page after a short delay
+      setTimeout(() => {
+        router.push("/user/checkout");
+      }, 1500);
+    } catch (error) {
+      console.error("Failed to buy now:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to process order. Please try again.",
+        toast: true,
+        position: "top-end",
+      });
+    } finally {
+      setIsBuyingNow(false);
+    }
+  };
+
   const productFeatures = [
     "Unprecedented imagery from the world's first compact with global shutter full-frame image sensor",
-    "AI-powered autofocus with real-time tracking",
-    "Professional 4K video recording capabilities",
-    "Weather-sealed body for outdoor photography",
-    "Extended battery life for all-day shooting",
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
@@ -248,10 +449,9 @@ export default function ProductDetails() {
       </div>
 
       <div className="relative z-10">
-        {/* Mobile/Tablet Layout */}
+        {/* Mobile Layout */}
         <div className="lg:hidden">
-          <div className="max-w-2xl mx-auto bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-t-3xl mt-4 mx-4 overflow-hidden">
-            {/* Mobile Header */}
+          <div className="max-w-2xl  bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-t-3xl mt-4 mx-4 overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-gray-700/50">
               <button
                 onClick={() => router.back()}
@@ -270,9 +470,7 @@ export default function ProductDetails() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <button className="p-2 hover:bg-gray-700/50 rounded-full transition-colors">
-                  <Share className="h-5 w-5 text-gray-400" />
-                </button>
+                <ShareButton className="cursor-pointer" productName={product.name} />
                 <button
                   onClick={handleWishlistToggle}
                   disabled={isUpdating || !email}
@@ -289,7 +487,6 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Product Images */}
             <div className="relative">
               <div className="aspect-square bg-gray-900/50 relative overflow-hidden">
                 <Image
@@ -311,7 +508,6 @@ export default function ProductDetails() {
                 )}
               </div>
 
-              {/* Image Thumbnails */}
               <div className="flex space-x-3 p-4 overflow-x-auto">
                 {productImages.map((image, index) => (
                   <button
@@ -335,9 +531,7 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Product Info */}
             <div className="p-4 space-y-6">
-              {/* Price Section */}
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center space-x-3">
@@ -366,7 +560,6 @@ export default function ProductDetails() {
                 </button>
               </div>
 
-              {/* Rating */}
               <div className="flex items-center space-x-3">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, i) => (
@@ -388,7 +581,6 @@ export default function ProductDetails() {
                 </span>
               </div>
 
-              {/* About This Item */}
               <div className="space-y-4">
                 <h3 className="text-xl font-semibold text-white">
                   About This Item
@@ -396,10 +588,11 @@ export default function ProductDetails() {
                 <p className="text-gray-300 text-sm leading-relaxed">
                   {description}
                 </p>
-
-                {/* Features List */}
                 <ul className="space-y-3">
-                  {productFeatures.map((feature, index) => (
+                  {(product?.features
+                    ? product?.features
+                    : productFeatures
+                  ).map((feature, index) => (
                     <li
                       key={index}
                       className="flex items-start space-x-3 text-sm text-gray-300"
@@ -411,7 +604,6 @@ export default function ProductDetails() {
                 </ul>
               </div>
 
-              {/* Product Details */}
               <div className="grid grid-cols-2 gap-4 py-4 border-t border-gray-700/50">
                 <div className="flex items-center space-x-2 text-sm text-gray-300">
                   <Truck className="h-4 w-4 text-green-400" />
@@ -431,7 +623,6 @@ export default function ProductDetails() {
                 </div>
               </div>
 
-              {/* Quantity Selector */}
               <div className="flex items-center justify-between py-4 border-t border-gray-700/50">
                 <span className="text-sm font-medium text-white">Quantity</span>
                 <div className="flex items-center space-x-3">
@@ -456,37 +647,66 @@ export default function ProductDetails() {
               </div>
             </div>
 
-            {/* Fixed Bottom Button */}
+            {/* Mobile Action Buttons */}
             <div className="sticky bottom-0 bg-gray-800/80 backdrop-blur-sm border-t border-gray-700/50 p-4">
-              <button
-                onClick={handleAddToCart}
-                disabled={product.stock === 0 || isUpdating || !email}
-                className={`w-full py-4 rounded-2xl font-semibold text-white transition-all duration-300 ${
-                  product.stock > 0 && email && !isUpdating
-                    ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 active:scale-95 shadow-lg shadow-purple-500/25"
-                    : "bg-gray-600 cursor-not-allowed"
-                }`}
-              >
-                {isUpdating ? (
-                  <div className="flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                    Adding to Cart...
-                  </div>
-                ) : product.stock === 0 ? (
-                  "Out of Stock"
-                ) : !email ? (
-                  "Login to Add to Cart"
-                ) : (
-                  `Add to Cart - ${formatPrice(product.price * quantity)}`
-                )}
-              </button>
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleAddToCart}
+                  disabled={product.stock === 0 || isUpdating || !email}
+                  className={`flex-1 py-3 rounded-2xl font-semibold text-white transition-all duration-300 ${
+                    product.stock > 0 && email && !isUpdating
+                      ? "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 active:scale-95 shadow-lg shadow-blue-500/25"
+                      : "bg-gray-600 cursor-not-allowed"
+                  }`}
+                >
+                  {isUpdating ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Adding...
+                    </div>
+                  ) : product.stock === 0 ? (
+                    "Out of Stock"
+                  ) : !email ? (
+                    "Login to Add"
+                  ) : (
+                    "Add to Cart"
+                  )}
+                </button>
+
+                <button
+                  onClick={handleBuyNow}
+                  disabled={product.stock === 0 || isBuyingNow || !email}
+                  className={`flex-1 py-3 rounded-2xl font-semibold text-white transition-all duration-300 ${
+                    product.stock > 0 && email && !isBuyingNow
+                      ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 active:scale-95 shadow-lg shadow-orange-500/25"
+                      : "bg-gray-600 cursor-not-allowed"
+                  }`}
+                >
+                  {isBuyingNow ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Processing...
+                    </div>
+                  ) : product.stock === 0 ? (
+                    "Out of Stock"
+                  ) : !email ? (
+                    "Login to Buy"
+                  ) : (
+                    <>
+                      <Zap className="inline h-4 w-4 mr-1" />
+                      Buy Now
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-        {/* Desktop/Laptop Layout */}
+
+        {/* Desktop Layout */}
         <div className="hidden lg:block">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            {/* Back Button */}
+            {/* Breadcrumb */}
             <div className="flex items-center space-x-2 text-sm text-gray-400 mb-8">
               <Link href="/" className="hover:text-white">
                 Home
@@ -572,9 +792,7 @@ export default function ProductDetails() {
 
                   {/* Action Buttons Overlay */}
                   <div className="absolute top-6 right-6 flex flex-col space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button className="p-3 bg-gray-900/80 backdrop-blur-sm rounded-full text-gray-300 hover:text-white transition-colors">
-                      <Share className="h-5 w-5" />
-                    </button>
+                    <ShareButton productName={product.name} />
                     <button
                       onClick={handleWishlistToggle}
                       disabled={isUpdating || !email}
@@ -698,7 +916,10 @@ export default function ProductDetails() {
                     Key Features
                   </h3>
                   <ul className="space-y-3">
-                    {productFeatures.map((feature, index) => (
+                    {(product?.features
+                      ? product?.features
+                      : productFeatures
+                    ).map((feature, index) => (
                       <li
                         key={index}
                         className="flex items-start space-x-3 text-gray-300"
@@ -708,6 +929,26 @@ export default function ProductDetails() {
                       </li>
                     ))}
                   </ul>
+                </div>
+
+                {/* Product Details */}
+                <div className="grid grid-cols-2 gap-6 py-6 border-t border-gray-700/50">
+                  <div className="flex items-center space-x-3 text-gray-300">
+                    <Truck className="h-6 w-6 text-green-400" />
+                    <span className="text-lg">Free Shipping</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-gray-300">
+                    <Shield className="h-6 w-6 text-blue-400" />
+                    <span className="text-lg">1 Year Warranty</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-gray-300">
+                    <RotateCcw className="h-6 w-6 text-purple-400" />
+                    <span className="text-lg">30-Day Returns</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-gray-300">
+                    <Check className="h-6 w-6 text-green-400" />
+                    <span className="text-lg">Authentic Product</span>
+                  </div>
                 </div>
 
                 {/* Quantity and Add to Cart */}
@@ -739,13 +980,14 @@ export default function ProductDetails() {
                     </div>
                   </div>
 
+                  {/* Desktop Action Buttons */}
                   <div className="flex space-x-4">
                     <button
                       onClick={handleAddToCart}
                       disabled={product.stock === 0 || isUpdating || !email}
                       className={`flex-1 cursor-pointer py-4 rounded-2xl font-semibold text-white text-lg transition-all duration-300 ${
                         product.stock > 0 && email && !isUpdating
-                          ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 hover:scale-105 shadow-lg shadow-purple-500/25"
+                          ? "bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 hover:scale-105 shadow-lg shadow-blue-500/25"
                           : "bg-gray-600 cursor-not-allowed"
                       }`}
                     >
@@ -762,6 +1004,32 @@ export default function ProductDetails() {
                         <>
                           <ShoppingCart className="inline h-5 w-5 mr-2" />
                           Add to Cart - {formatPrice(product.price * quantity)}
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={handleBuyNow}
+                      disabled={product.stock === 0 || isBuyingNow || !email}
+                      className={`flex-1 cursor-pointer py-4 rounded-2xl font-semibold text-white text-lg transition-all duration-300 ${
+                        product.stock > 0 && email && !isBuyingNow
+                          ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 hover:scale-105 shadow-lg shadow-orange-500/25"
+                          : "bg-gray-600 cursor-not-allowed"
+                      }`}
+                    >
+                      {isBuyingNow ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mr-3"></div>
+                          Processing...
+                        </div>
+                      ) : product.stock === 0 ? (
+                        "Out of Stock"
+                      ) : !email ? (
+                        "Login to Buy Now"
+                      ) : (
+                        <>
+                          <Zap className="inline h-5 w-5 mr-2" />
+                          Buy Now - {formatPrice(product.price * quantity)}
                         </>
                       )}
                     </button>

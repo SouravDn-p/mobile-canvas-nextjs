@@ -1,5 +1,4 @@
 "use client";
-
 import { useState } from "react";
 import Link from "next/link";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
@@ -18,8 +17,9 @@ import {
   User,
   Calendar,
   AlertCircle,
+  List,
 } from "lucide-react";
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import Image from "next/image";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
@@ -59,6 +59,9 @@ const productSchema = z.object({
       })
     )
     .optional(),
+  features: z
+    .array(z.string().min(1, "Feature description is required"))
+    .optional(), // Added features to schema
 });
 
 // Enhanced Inline Components with Dark Theme
@@ -73,7 +76,6 @@ const Button = ({
 }) => {
   const baseClasses =
     "inline-flex items-center justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-all duration-300 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 transform hover:scale-105";
-
   const variants = {
     default:
       "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl",
@@ -85,19 +87,16 @@ const Button = ({
       "bg-gradient-to-r from-red-600 to-pink-600 text-white hover:from-red-700 hover:to-pink-700 shadow-lg hover:shadow-xl",
     ghost: "hover:bg-gray-800/50 text-gray-300 hover:text-white",
   };
-
   const sizes = {
     default: "h-11 px-6 py-2",
     sm: "h-9 rounded-lg px-4",
     lg: "h-12 rounded-xl px-8",
   };
-
   const classes = `${baseClasses} ${variants[variant]} ${
     sizes[size]
   } ${className} ${
     disabled ? "opacity-50 cursor-not-allowed transform-none" : ""
   }`;
-
   return (
     <button type={type} className={classes} disabled={disabled} {...props}>
       {children}
@@ -114,7 +113,6 @@ const Card = ({ children, className = "", variant = "default", ...props }) => {
     glass:
       "rounded-2xl bg-gray-900/30 border border-gray-700/30 text-gray-100 shadow-xl backdrop-blur-xl",
   };
-
   return (
     <div className={`${variants[variant]} ${className}`} {...props}>
       {children}
@@ -237,6 +235,7 @@ export default function AddProductPage() {
       supplier: "",
       status: "In Stock",
       specifications: [{ key: "", value: "" }],
+      features: ["", "", ""],
     },
     mode: "onChange",
   });
@@ -246,32 +245,42 @@ export default function AddProductPage() {
     name: "specifications",
   });
 
+  const {
+    fields: featureFields,
+    append: appendFeature,
+    remove: removeFeature,
+  } = useFieldArray({
+    control,
+    name: "features",
+  });
+
   const categories = [
+    "Smartphones",
+    "Tablets",
+    "Laptops",
+    "Audio",
+    "Wearables",
     "Electronics",
     "Accessories",
-    "Furniture",
-    "Clothing",
-    "Books",
-    "Sports",
-    "Home & Garden",
-    "Automotive",
-    "Health & Beauty",
-    "Toys & Games",
+    "Mobile Cover",
   ];
 
   const onSubmit = async (data) => {
     setLoading(true);
-
     try {
       // Filter out empty specifications
       const filteredSpecs =
         data.specifications?.filter((spec) => spec.key && spec.value) || [];
+      // Filter out empty features
+      const filteredFeatures =
+        data.features?.filter((feature) => feature) || [];
 
       const productData = {
         ...data,
         price: Number(data.price),
         stock: Number(data.stock),
         specifications: filteredSpecs,
+        features: filteredFeatures, // Include filtered features
         images: images,
       };
 
@@ -285,13 +294,11 @@ export default function AddProductPage() {
         text: "✅ Your product has been created successfully.",
         confirmButtonColor: "#10B981",
       });
-
       reset();
       setImages([]);
       router.push("/products");
     } catch (error) {
-      console.error("❌ Error creating product:", err?.data?.message);
-
+      console.error("❌ Error creating product:", error?.data?.message);
       // ❌ Error Alert
       Swal.fire({
         icon: "error",
@@ -306,19 +313,16 @@ export default function AddProductPage() {
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-
     if (images.length + files.length > 5) {
       alert("Maximum 5 images allowed");
       return;
     }
-
     files.forEach((file) => {
       if (file.size > 10 * 1024 * 1024) {
         // 10MB limit
         alert(`File ${file.name} is too large. Maximum size is 10MB.`);
         return;
       }
-
       const reader = new FileReader();
       reader.onload = (event) => {
         setImages((prev) => [
@@ -346,7 +350,6 @@ export default function AddProductPage() {
   // Auto-generate SKU based on name and category
   const watchedName = watch("name");
   const watchedCategory = watch("category");
-
   const generateSKU = () => {
     if (watchedName && watchedCategory) {
       const namePrefix = watchedName.substring(0, 3).toUpperCase();
@@ -366,7 +369,6 @@ export default function AddProductPage() {
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl"></div>
       </div>
-
       <div className="max-w-4xl mx-auto py-8 sm:px-6 lg:px-8 relative z-10">
         <div className="px-4 py-6 sm:px-0">
           {/* Header */}
@@ -384,7 +386,6 @@ export default function AddProductPage() {
               {isDirty ? "Unsaved changes" : "No changes"}
             </div>
           </div>
-
           <div className="mb-8">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent flex items-center">
               <Plus className="mr-3 h-10 w-10 text-blue-400" />
@@ -394,7 +395,6 @@ export default function AddProductPage() {
               Create a new product in your inventory
             </p>
           </div>
-
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
             {/* Basic Information */}
             <Card variant="gradient">
@@ -418,7 +418,6 @@ export default function AddProductPage() {
                       />
                     </div>
                   </FormField>
-
                   <FormField label="Category" required error={errors.category}>
                     <div className="relative">
                       <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -442,7 +441,6 @@ export default function AddProductPage() {
                       />
                     </div>
                   </FormField>
-
                   <FormField label="Price" required error={errors.price}>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -456,7 +454,6 @@ export default function AddProductPage() {
                       />
                     </div>
                   </FormField>
-
                   <FormField
                     label="Stock Quantity"
                     required
@@ -473,7 +470,6 @@ export default function AddProductPage() {
                       />
                     </div>
                   </FormField>
-
                   <FormField label="SKU" required error={errors.sku}>
                     <div className="relative">
                       <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -495,7 +491,6 @@ export default function AddProductPage() {
                       </Button>
                     </div>
                   </FormField>
-
                   <FormField label="Supplier" error={errors.supplier}>
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -507,7 +502,6 @@ export default function AddProductPage() {
                       />
                     </div>
                   </FormField>
-
                   <FormField label="Status" error={errors.status}>
                     <Controller
                       name="status"
@@ -522,7 +516,6 @@ export default function AddProductPage() {
                     />
                   </FormField>
                 </div>
-
                 <FormField label="Description" error={errors.description}>
                   <Textarea
                     {...register("description")}
@@ -569,7 +562,6 @@ export default function AddProductPage() {
                       disabled={images.length >= 5}
                     />
                   </div>
-
                   {/* Image Preview */}
                   {images.length > 0 && (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -600,6 +592,58 @@ export default function AddProductPage() {
                       ))}
                     </div>
                   )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Product Features */}
+            <Card variant="gradient">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <List className="mr-2 h-6 w-6 text-orange-400" />
+                  Product Features
+                </CardTitle>
+                <CardDescription>
+                  Highlight key selling points of the product
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {featureFields.map((field, index) => (
+                    <div key={field.id} className="flex gap-4 items-start">
+                      <FormField
+                        label={`Feature ${index + 1}`}
+                        error={errors.features?.[index]}
+                        className="flex-1"
+                      >
+                        <Input
+                          {...register(`features.${index}`)}
+                          placeholder="e.g., AI-powered autofocus, 4K video recording"
+                          error={!!errors.features?.[index]}
+                        />
+                      </FormField>
+                      <div className="pt-8">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeFeature(index)}
+                          disabled={featureFields.length === 1}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => appendFeature("")}
+                    className="w-full"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Feature
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -658,7 +702,7 @@ export default function AddProductPage() {
                     type="button"
                     variant="outline"
                     onClick={addSpecification}
-                    className="w-full"
+                    className="w-full bg-transparent"
                   >
                     <Plus className="mr-2 h-4 w-4" />
                     Add Specification
@@ -670,7 +714,10 @@ export default function AddProductPage() {
             {/* Form Actions */}
             <div className="flex flex-col sm:flex-row gap-4 justify-end">
               <Link href="/products">
-                <Button variant="outline" className="w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  className="w-full sm:w-auto bg-transparent"
+                >
                   Cancel
                 </Button>
               </Link>

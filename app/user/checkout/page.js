@@ -112,10 +112,10 @@ const CheckoutItem = ({ item, onUpdateQuantity, onRemove }) => {
             ৳ {(item.price * item.quantity).toFixed(2)}
           </p>
           <Button
-            variant="ghost"
+            variant="admin"
             size="sm"
             onClick={() => onRemove(item.productId)}
-            className="text-red-400 hover:text-red-300 p-0 h-6 w-6"
+            className="text-red-400  hover:text-red-300 p-0 h-12 w-12"
           >
             <Trash2 className="h-3 w-3" />
           </Button>
@@ -211,40 +211,40 @@ export default function CheckoutPage() {
 
   // Payment methods available in Bangladesh
   const paymentMethods = [
-    {
-      id: "card",
-      title: "Credit/Debit Card",
-      description: "Visa, Mastercard, American Express",
-      icon: CreditCard,
-    },
-    {
-      id: "bkash",
-      title: "bKash",
-      description: "Mobile Financial Service",
-      icon: Smartphone,
-      color: "text-pink-400",
-    },
-    {
-      id: "rocket",
-      title: "Rocket",
-      description: "Dutch-Bangla Bank Mobile Banking",
-      icon: Smartphone,
-      color: "text-purple-400",
-    },
-    {
-      id: "nagad",
-      title: "Nagad",
-      description: "Digital Financial Service",
-      icon: Smartphone,
-      color: "text-orange-400",
-    },
-    {
-      id: "upay",
-      title: "Upay",
-      description: "UCB Fintech Company Limited",
-      icon: Smartphone,
-      color: "text-green-400",
-    },
+    // {
+    //   id: "card",
+    //   title: "Credit/Debit Card",
+    //   description: "Visa, Mastercard, American Express",
+    //   icon: CreditCard,
+    // },
+    // {
+    //   id: "bkash",
+    //   title: "bKash",
+    //   description: "Mobile Financial Service",
+    //   icon: Smartphone,
+    //   color: "text-pink-400",
+    // },
+    // {
+    //   id: "rocket",
+    //   title: "Rocket",
+    //   description: "Dutch-Bangla Bank Mobile Banking",
+    //   icon: Smartphone,
+    //   color: "text-purple-400",
+    // },
+    // {
+    //   id: "nagad",
+    //   title: "Nagad",
+    //   description: "Digital Financial Service",
+    //   icon: Smartphone,
+    //   color: "text-orange-400",
+    // },
+    // {
+    //   id: "upay",
+    //   title: "Upay",
+    //   description: "UCB Fintech Company Limited",
+    //   icon: Smartphone,
+    //   color: "text-green-400",
+    // },
     {
       id: "sslcommerz",
       title: "SSLCommerz",
@@ -360,7 +360,7 @@ export default function CheckoutPage() {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
-  const shipping = subtotal > 50 ? 0 : 9.99;
+  const shipping = subtotal > 500 ? 0 : 120; // Free shipping for orders over 500 BDT, otherwise 120 BDT
   const total = subtotal + shipping;
 
   const onSubmit = async (formData) => {
@@ -866,7 +866,7 @@ export default function CheckoutPage() {
                       <div className="flex justify-between text-xs sm:text-sm">
                         <span className="text-gray-400">Subtotal:</span>
                         <span className="text-white">
-                          ৳ {(subtotal * 110).toFixed(2)}
+                          ৳ {(subtotal ).toFixed(2)}
                         </span>
                       </div>
                       <div className="flex justify-between text-xs sm:text-sm">
@@ -874,20 +874,20 @@ export default function CheckoutPage() {
                         <span className="text-white">
                           {shipping === 0
                             ? "Free"
-                            : `৳  ${(shipping * 110).toFixed(2)}`}
+                            : `৳  ${(shipping ).toFixed(2)}`}
                         </span>
                       </div>
                       {/* <div className="flex justify-between text-xs sm:text-sm">
                         <span className="text-gray-400">Tax:</span>
                         <span className="text-white">
-                          ৳{(tax * 110).toFixed(2)}
+                          ৳{(tax ).toFixed(2)}
                         </span>
                       </div> */}
                       <div className="border-t border-gray-600 pt-2">
                         <div className="flex justify-between font-semibold text-sm sm:text-lg">
                           <span className="text-white">Total:</span>
                           <span className="text-white">
-                            ৳ {(total * 110).toFixed(2)}
+                            ৳ {(total ).toFixed(2)}
                           </span>
                         </div>
                       </div>
@@ -897,7 +897,7 @@ export default function CheckoutPage() {
                     {subtotal < 50 && (
                       <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
                         <p className="text-xs sm:text-sm text-blue-300">
-                          Add ৳ {((50 - subtotal) * 110).toFixed(2)} more for
+                          Add ৳ {((50 - subtotal) ).toFixed(2)} more for
                           free shipping!
                         </p>
                       </div>
@@ -918,7 +918,7 @@ export default function CheckoutPage() {
                       ) : (
                         <>
                           <Lock className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                          Place Order - ৳ {(total * 110).toFixed(2)}
+                          Place Order - ৳ {(total ).toFixed(2)}
                         </>
                       )}
                     </Button>
