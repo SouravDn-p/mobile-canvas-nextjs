@@ -119,7 +119,7 @@ const BlogPage = () => {
 
           {/* Search and Filters */}
           <Card className="hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-6">
+            <CardContent className="pt-6">
               <div className="space-y-4">
                 {/* Search Bar */}
                 <form onSubmit={handleSearch} className="flex gap-4">
