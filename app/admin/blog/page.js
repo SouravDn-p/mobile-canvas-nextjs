@@ -183,7 +183,7 @@ const AdminBlogsPage = () => {
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-400">Total Blogs</p>
@@ -199,7 +199,7 @@ const AdminBlogsPage = () => {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-400">Published</p>
@@ -218,7 +218,7 @@ const AdminBlogsPage = () => {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-400">Drafts</p>
@@ -234,7 +234,7 @@ const AdminBlogsPage = () => {
             </Card>
 
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-gray-400">Total Views</p>
@@ -255,7 +255,7 @@ const AdminBlogsPage = () => {
 
           {/* Search and Filters */}
           <Card>
-            <CardContent className="p-6">
+            <CardContent className="pt-6">
               <div className="space-y-4">
                 {/* Search and Actions */}
                 <div className="flex flex-col sm:flex-row gap-4">
