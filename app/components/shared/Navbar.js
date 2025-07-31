@@ -4,7 +4,6 @@ import Link from "next/link";
 import {
   Home,
   ShoppingCart,
-  BarChart3,
   LogIn,
   UserPlus,
   Menu,
@@ -15,10 +14,6 @@ import {
   BarChart3Icon,
   Package,
   Heart,
-  CreditCard,
-  Minus,
-  Plus,
-  Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -26,7 +21,7 @@ import logo from "@/public/logo.jpg";
 import Image from "next/image";
 import { signOut, useSession } from "next-auth/react";
 import { MdOutlineDashboard, MdOutlineLogout } from "react-icons/md";
-import { FaUserCircle } from "react-icons/fa";
+import { FaBlog, FaUserCircle } from "react-icons/fa";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -109,6 +104,7 @@ export default function Navbar() {
     // { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
     { href: "/products", label: "Products", icon: ShoppingCart },
     { href: "/profile", label: "Profile", icon: User },
+    { href: "/blog", label: "Blogs", icon: FaBlog },
   ];
 
   const userMenuItems = [

@@ -10,7 +10,7 @@ export const productApi = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Product", "Order"],
+  tagTypes: ["Product", "Order", "Blog"],
   endpoints: (builder) => ({
     getProducts: builder.query({
       query: () => "products",
@@ -64,7 +64,7 @@ export const productApi = createApi({
         body: data,
       }),
     }),
-    // Inside productApi or userApi
+    // --- Order Endpoints ---
     getOrders: builder.query({
       query: () => "orders",
     }),
@@ -74,10 +74,9 @@ export const productApi = createApi({
     updateOrder: builder.mutation({
       query: ({ id, data }) => ({
         url: `/orders/update/${id}`,
-        method: "PUT", // or PATCH if your API uses it
+        method: "PUT",
         body: data,
       }),
-      // invalidatesTags: ["Order"],
     }),
     getOrdersByEmail: builder.query({
       query: (email) => `orders/${email}`,
@@ -88,6 +87,49 @@ export const productApi = createApi({
         method: "POST",
         body: orderData,
       }),
+    }),
+    // --- Blog Endpoints ---
+    getBlogs: builder.query({
+      query: () => "blogs",
+      providesTags: ["Blog"],
+    }),
+    getBlogById: builder.query({
+      query: (id) => `blogs/${id}`,
+      providesTags: (result, error, id) => [{ type: "Blog", id }],
+    }),
+    createBlog: builder.mutation({
+      query: (blog) => ({
+        url: "blogs",
+        method: "POST",
+        body: blog,
+      }),
+      invalidatesTags: ["Blog"],
+    }),
+    updateBlog: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `blogs/${id}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: "Blog", id }],
+    }),
+    deleteBlog: builder.mutation({
+      query: (id) => ({
+        url: `blogs/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Blog"],
+    }),
+    // Simplified comment handling - using updateBlog for all operations
+    addCommentToBlog: builder.mutation({
+      query: ({ blogId, data }) => ({
+        url: `blogs/${blogId}`,
+        method: "PUT",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { blogId }) => [
+        { type: "Blog", id: blogId },
+      ],
     }),
   }),
 });
@@ -107,4 +149,11 @@ export const {
   useUpdateOrderMutation,
   useGetOrdersByEmailQuery,
   usePlaceOrderMutation,
+  // Blog hooks
+  useGetBlogsQuery,
+  useGetBlogByIdQuery,
+  useCreateBlogMutation,
+  useUpdateBlogMutation,
+  useDeleteBlogMutation,
+  useAddCommentToBlogMutation,
 } = productApi;

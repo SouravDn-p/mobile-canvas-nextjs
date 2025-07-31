@@ -362,12 +362,17 @@ const UserManagementPage = () => {
                 <div className="space-y-3">
                   {filteredUsers.map((user) => (
                     <div
-                      key={user.id}
+                      key={user._id}
                       className="flex flex-col lg:flex-row lg:items-center justify-between p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 hover:bg-gray-800/50 transition-colors space-y-4 lg:space-y-0"
                     >
                       <div className="flex items-center space-x-4">
                         <Image
-                          src={user.avatar || "/placeholder.svg"}
+                          src={
+                            user.image ||
+                            `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                              user.name || "User"
+                            )}&background=random`
+                          }
                           alt={user.name}
                           width={40}
                           height={40}

@@ -11,6 +11,7 @@ const nextConfig = {
       "adminapi.applegadgetsbd.com",
       "i.ibb.co",
       "avatars.githubusercontent.com",
+      "ui-avatars.com",
     ],
   },
 };
