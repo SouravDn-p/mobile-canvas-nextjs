@@ -1,4 +1,15 @@
-import { Badge, Calendar, CheckCircle, Clock, Download, Eye, Package, ShoppingBag, Truck, X } from "lucide-react";
+import {
+  Badge,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Download,
+  Eye,
+  Package,
+  ShoppingBag,
+  Truck,
+  X,
+} from "lucide-react";
 import Card from "../ui/card";
 import CardContent from "../ui/cardContent";
 import Button from "../ui/button";
@@ -20,6 +31,20 @@ const OrderCard = ({ order, isAdmin = false }) => {
         return "admin";
       default:
         return "default";
+    }
+  };
+  const getPaymentStatusColor = (status) => {
+    switch (status) {
+      case "paid":
+        return "bg-green-500/20 text-green-400 border-green-500/30";
+      case "pending":
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      case "failed":
+        return "bg-red-500/20 text-red-400 border-red-500/30";
+      case "refunded":
+        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
+      default:
+        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
     }
   };
 
@@ -97,6 +122,21 @@ const OrderCard = ({ order, isAdmin = false }) => {
               <Download className="h-4 w-4 mr-2" />
               Invoice
             </Button>
+            {/* Payment Status Dropdown */}
+            <p
+              value={order?.payment || "pending"}
+              onChange={(e) =>
+                handleStatusChange(order?._id, order?.status, e.target.value)
+              }
+              className={`px-3 py-3 text-xs font-medium rounded-full border ${getPaymentStatusColor(
+                order?.payment || "pending"
+              )} bg-transparent focus:outline-none focus:ring-2 focus:ring-purple-500/50 disabled:opacity-50`}
+              aria-label={`Update payment status for order ${
+                order?._id || "unknown"
+              }`}
+            >
+              {order?.status || "Pending"}
+            </p>
           </div>
         </div>
 
@@ -147,7 +187,7 @@ const OrderCard = ({ order, isAdmin = false }) => {
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400">Shipping:</span>
                   <span className="text-white">
-                    ৳ {(order.total * 0.1).toFixed(2)}
+                    ৳ {order?.shipping.toFixed(2)}
                   </span>
                 </div>
                 <div className="border-t border-gray-600 pt-2">

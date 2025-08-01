@@ -385,6 +385,7 @@ export default function CheckoutPage() {
         total: total,
         status: "processing",
         payment: "pending",
+        shipping: total > 500 ? 0 : 120, // Free shipping for orders over 500 BDT
         shippingAddress: {
           firstName: formData.firstName,
           lastName: formData.lastName,

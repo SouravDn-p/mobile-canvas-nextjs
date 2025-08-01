@@ -184,11 +184,9 @@ export default function Navbar() {
                 Mobile Canvas
               </span>
               <span
-                className={`text-sm font-medium transition-all duration-300 ${
-                  scrolled ? "text-white/90 drop-shadow-md" : "text-blue-300"
-                }`}
+                className={`text-sm font-medium transition-all duration-300 text-white/90 drop-shadow-md`}
               >
-                Tech & Beyond
+                The Art of Connectivity
               </span>
             </div>
           </Link>

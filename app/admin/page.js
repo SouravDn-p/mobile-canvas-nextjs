@@ -28,12 +28,18 @@ import {
   CheckCircle,
   Clock,
   Zap,
+  ListOrderedIcon,
 } from "lucide-react";
 import {
   useGetOrdersQuery,
   useGetProductsQuery,
   useGetAllUsersQuery,
 } from "@/redux/api/productapi";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/app/components/ui/avatar";
 
 const Tabs = ({ children, defaultValue, className = "" }) => {
   const [activeTab, setActiveTab] = React.useState(defaultValue);
@@ -65,7 +71,7 @@ const TabsTrigger = ({
 }) => (
   <button
     onClick={() => setActiveTab(value)}
-    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer ${
+    className={`px-4 py-2  text-sm font-medium rounded-lg transition-all duration-200 cursor-pointer ${
       activeTab === value
         ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30"
         : "text-gray-400 hover:text-white hover:bg-gray-700/50"
@@ -82,9 +88,11 @@ const TabsContent = ({ value, children, className = "", activeTab }) => {
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
-  const { data: orderData, isLoading, error } = useGetOrdersQuery();
+  const { data: orderData, isLoading, error, refetch } = useGetOrdersQuery();
   const { data: productData } = useGetProductsQuery();
   const { data: userData } = useGetAllUsersQuery();
+  const productsData = productData?.data;
+  console.log("Order Data:", productsData?.length);
 
   const router = useRouter();
 
@@ -113,7 +121,7 @@ export default function AdminPage() {
   const stats = [
     {
       title: "Total Revenue",
-      value: orderData?.totalRevenue ?? "$0.00",
+      value: orderData?.orders?.reduce ((acc, order) => acc + order.total, 0)?.toFixed(2) ?? "0.00",
       change: "+12.5%",
       icon: DollarSign,
       color: "text-green-400",
@@ -131,7 +139,7 @@ export default function AdminPage() {
     },
     {
       title: "Total Products",
-      value: productData?.data?.length?.toString() ?? "0",
+      value: productsData?.length?.toString() ?? "0",
       change: "+3.1%",
       icon: Package,
       color: "text-purple-400",
@@ -151,7 +159,7 @@ export default function AdminPage() {
 
   const recentOrders =
     orderData?.orders?.length > 0
-      ? orderData.orders.slice(0, 5)
+      ? orderData?.orders?.slice(0, 5)
       : [
           {
             id: "ORD-001",
@@ -169,41 +177,9 @@ export default function AdminPage() {
             status: "processing",
             date: "2024-01-15",
           },
-          {
-            id: "ORD-003",
-            customer: "Mike Johnson",
-            product: "Mechanical Keyboard",
-            amount: "$129.99",
-            status: "shipped",
-            date: "2024-01-14",
-          },
         ];
 
-  const topProducts =
-    orderData?.topProducts?.length > 0
-      ? orderData.topProducts
-      : [
-          {
-            name: "Wireless Headphones",
-            sales: 156,
-            revenue: "$13,944",
-          },
-          {
-            name: "Gaming Mouse",
-            sales: 89,
-            revenue: "$4,091",
-          },
-          {
-            name: "Mechanical Keyboard",
-            sales: 67,
-            revenue: "$8,713",
-          },
-          {
-            name: "USB-C Hub",
-            sales: 45,
-            revenue: "$1,575",
-          },
-        ];
+  const topProducts = productsData?.length > 0 ? productsData?.slice(0, 4) : [];
 
   const getStatusColor = (status) => {
     if (!status) return "bg-gray-500/20 text-gray-400 border-gray-500/30";
@@ -286,7 +262,7 @@ export default function AdminPage() {
                 key={index}
                 className="hover:shadow-lg transition-all duration-300 group"
               >
-                <CardContent className="p-4 sm:p-6">
+                <CardContent className="pt-4 sm:p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="text-xs sm:text-sm font-medium text-gray-400 mb-1">
@@ -316,9 +292,15 @@ export default function AdminPage() {
           {/* Tabs */}
           <Tabs defaultValue="overview" className="space-y-6 cursor-pointer">
             <TabsList className="w-full sm:w-auto cursor-pointer">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="orders">Recent Orders</TabsTrigger>
-              <TabsTrigger value="products">Top Products</TabsTrigger>
+              <TabsTrigger className="cursor-pointer" value="overview">
+                Overview
+              </TabsTrigger>
+              <TabsTrigger className="cursor-pointer" value="orders">
+                Recent Orders
+              </TabsTrigger>
+              <TabsTrigger className="cursor-pointer" value="products">
+                Top Products
+              </TabsTrigger>
             </TabsList>
 
             {/* Overview Tab */}
@@ -340,6 +322,15 @@ export default function AdminPage() {
                       <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold transition-all duration-300 hover:scale-105">
                         <Package className="mr-2 h-4 w-4" />
                         Manage Products
+                      </Button>
+                    </Link>
+                    <Link href="/admin/orders" className="block">
+                      <Button
+                        variant="outline"
+                        className="w-full border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-500 bg-transparent"
+                      >
+                        <ListOrderedIcon className="mr-2 h-4 w-4" />
+                        Manage Orders
                       </Button>
                     </Link>
                     <Link href="/admin/users" className="block">
@@ -465,25 +456,63 @@ export default function AdminPage() {
                     <div className="space-y-3">
                       {recentOrders?.map((order, index) => (
                         <div
-                          key={order.id || `order-${index}`}
+                          key={order._id || `order-${index}`}
                           className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-800/30 rounded-lg border border-gray-700/50 hover:bg-gray-800/50 transition-colors space-y-3 sm:space-y-0"
                         >
                           <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-6">
                             <div>
                               <p className="font-semibold text-white text-sm sm:text-base">
-                                {order.id || "N/A"}
+                                {order._id || "N/A"}
                               </p>
                               <p className="text-xs sm:text-sm text-gray-400">
-                                {order.customer || "Unknown"}
+                                {order.shippingAddress.firstName +
+                                  " " +
+                                  order.shippingAddress.lastName || "Unknown"}
+                              </p>{" "}
+                              <p className="text-xs sm:text-sm pt-1 text-gray-400">
+                                Total : ৳ {order.total || "৳ 0"}
                               </p>
                             </div>
                             <div>
-                              <p className="text-white text-sm sm:text-base">
-                                {order.product || "No product"}
-                              </p>
-                              <p className="text-xs sm:text-sm text-gray-400">
-                                {order.amount || "$0"}
-                              </p>
+                              <div className="space-y-3 mb-4">
+                                <h4 className="font-medium text-white">
+                                  Order Items
+                                </h4>
+                                <div className="space-y-2 md:flex gap-2 md:space-y-0 md:space-x-2">
+                                  {order?.items?.map((item, index) => (
+                                    <div
+                                      key={`${order._id}-${index}`}
+                                      className="flex items-center space-x-3 p-2 bg-gray-800/50 rounded-lg"
+                                    >
+                                      <Avatar className="h-10 w-10">
+                                        <AvatarImage
+                                          src={item.image || "/placeholder.svg"}
+                                          alt={item.name || "Product"}
+                                        />
+                                        <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                                          {item.name?.charAt(0) || "P"}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <div className="flex-1">
+                                        <p className="text-white font-medium text-sm">
+                                          {item.name || "Unknown Product"}
+                                        </p>
+                                        <p className="text-xs text-gray-400">
+                                          Qty: {item.quantity || 1} × $
+                                          {(item.price || 0).toFixed(2)}
+                                        </p>
+                                      </div>
+                                      <span className="text-white font-medium text-sm">
+                                        $
+                                        {(
+                                          (item.price || 0) *
+                                          (item.quantity || 1)
+                                        ).toFixed(2)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
                             </div>
                           </div>
                           <div className="flex items-center justify-between sm:justify-end space-x-3">
@@ -500,13 +529,15 @@ export default function AdminPage() {
                                   (order.status || "N/A").slice(1)}
                               </span>
                             </Badge>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="text-gray-400 hover:text-white"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
+                            <Link href={`/admin/orders/${order._id}`}>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-gray-400 hover:text-white"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            </Link>
                           </div>
                         </div>
                       ))}
@@ -565,7 +596,7 @@ export default function AdminPage() {
                           </div>
                           <div className="text-left sm:text-right">
                             <p className="font-semibold text-white text-sm sm:text-base">
-                              {product.revenue || "$0"}
+                              {product.revenue || "৳ 0"}
                             </p>
                             <p className="text-xs sm:text-sm text-gray-400">
                               Revenue

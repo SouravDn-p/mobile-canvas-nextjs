@@ -41,6 +41,7 @@ export async function POST(req) {
       total,
       status,
       payment,
+      shipping,
       shippingAddress,
       paymentMethod,
       createdAt,
@@ -71,6 +72,7 @@ export async function POST(req) {
       payment: payment || "pending",
       shippingAddress,
       paymentMethod,
+      shipping: shipping || 0,
       createdAt: createdAt ? new Date(createdAt) : new Date(),
     };
 

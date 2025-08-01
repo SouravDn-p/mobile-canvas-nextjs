@@ -7,7 +7,6 @@ import {
   Package,
   Search,
   Eye,
-  Edit,
   CheckCircle,
   Clock,
   Truck,
@@ -24,7 +23,6 @@ import {
   ShoppingBag,
   CreditCard,
 } from "lucide-react";
-import Image from "next/image";
 import {
   useGetOrdersQuery,
   useUpdateOrderMutation,
@@ -620,8 +618,7 @@ const AdminOrdersPage = () => {
                                   : "N/A"}
                               </span>
                               <span className="flex items-center">
-                                <DollarSign className="h-3 w-3 mr-1" />$
-                                {(order?.total || 0).toFixed(2)}
+                                ৳ {(order?.total || 0).toFixed(2)}
                               </span>
                             </div>
                           </div>
@@ -753,12 +750,12 @@ const AdminOrdersPage = () => {
                                   {item.name || "Unknown Product"}
                                 </p>
                                 <p className="text-xs text-gray-400">
-                                  Qty: {item.quantity || 1} × $
+                                  Qty: {item.quantity || 1} x ৳ {" "}
                                   {(item.price || 0).toFixed(2)}
                                 </p>
                               </div>
                               <span className="text-white font-medium text-sm">
-                                $
+                                ৳ 
                                 {(
                                   (item.price || 0) * (item.quantity || 1)
                                 ).toFixed(2)}

@@ -67,7 +67,7 @@ const ProfileTab = () => {
   return (
     <Card className="glass border-white/10">
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex  items-center justify-between">
           <div>
             <CardTitle className="text-white">Profile Information</CardTitle>
             <CardDescription className="text-gray-400">
@@ -77,8 +77,8 @@ const ProfileTab = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="flex items-center space-x-6">
-          <Avatar className="h-20 w-20">
+        <div className="flex flex-wrap justify-center md:justify-start gap-2 items-center space-x-6">
+          <Avatar className="h-20 w-20 ">
             <AvatarImage src={userProfile.avatar} alt={userProfile.name} />
             <AvatarFallback className="bg-gradient-to-r from-green-500 to-emerald-400 text-black text-xl">
               {userProfile.name.charAt(0)}

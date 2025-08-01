@@ -37,10 +37,8 @@ import WishlistTab from "../components/dashboard/WishlistTab";
 import SettingTab from "../components/dashboard/SettingTab";
 import ProfileTab from "../components/dashboard/ProfileTab";
 import Link from "next/link";
-import Image from "next/image";
 import {
   useGetOrdersByEmailQuery,
-  useGetOrdersQuery,
 } from "@/redux/api/productapi";
 import OrderCard from "../components/order/OrderCard";
 

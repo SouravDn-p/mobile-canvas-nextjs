@@ -30,6 +30,9 @@ import {
   Printer,
   RefreshCw,
   Trash2,
+  MoreVertical,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -53,12 +56,11 @@ const OrderDetailsPage = () => {
   } = useGetOrderByIdQuery(orderId);
   const [updateOrder, { isLoading: isUpdating }] = useUpdateOrderMutation();
 
-  console.log("Order Data:", orderData);
-  console.log("orderId:", orderId);
-
   const [isEditing, setIsEditing] = useState(false);
   const [editedOrder, setEditedOrder] = useState(null);
   const [activeTab, setActiveTab] = useState("details");
+  const [showMobileActions, setShowMobileActions] = useState(false);
+  const [expandedItems, setExpandedItems] = useState({});
 
   useEffect(() => {
     if (status === "loading") return;
@@ -78,10 +80,12 @@ const OrderDetailsPage = () => {
 
   if (status === "loading" || isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="flex items-center space-x-3">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+        <div className="flex flex-col items-center space-y-4">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
-          <span className="text-white text-lg">Loading Order Details...</span>
+          <span className="text-white text-base sm:text-lg text-center">
+            Loading Order Details...
+          </span>
         </div>
       </div>
     );
@@ -93,19 +97,19 @@ const OrderDetailsPage = () => {
 
   if (error || !actualOrder) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <Card className="border-red-500/50 bg-red-500/10 max-w-md">
-          <CardContent className="p-6 text-center">
-            <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-white mb-2">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+        <Card className="border-red-500/50 bg-red-500/10 max-w-md w-full">
+          <CardContent className="p-4 sm:p-6 text-center">
+            <AlertTriangle className="h-10 w-10 sm:h-12 sm:w-12 text-red-400 mx-auto mb-4" />
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-2">
               Order Not Found
             </h3>
-            <p className="text-gray-400 mb-4">
+            <p className="text-gray-400 mb-4 text-sm sm:text-base">
               The order you&apos;re looking for doesn&apos;t exist or has been
               removed.
             </p>
             <Link href="/admin/orders">
-              <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+              <Button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 w-full sm:w-auto">
                 Back to Orders
               </Button>
             </Link>
@@ -202,16 +206,6 @@ const OrderDetailsPage = () => {
     }));
   };
 
-  const handlePaymentMethodChange = (field, value) => {
-    setEditedOrder((prev) => ({
-      ...prev,
-      paymentMethod: {
-        ...prev.paymentMethod,
-        [field]: value,
-      },
-    }));
-  };
-
   const handleItemChange = (index, field, value) => {
     setEditedOrder((prev) => ({
       ...prev,
@@ -232,6 +226,13 @@ const OrderDetailsPage = () => {
     navigator.clipboard.writeText(text);
   };
 
+  const toggleItemExpansion = (index) => {
+    setExpandedItems((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
   const calculateTotals = () => {
     const subtotal =
       editedOrder?.items?.reduce(
@@ -239,10 +240,9 @@ const OrderDetailsPage = () => {
         0
       ) || 0;
     const tax = subtotal * 0.08; // 8% tax
-    const shipping = 10.0; // Fixed shipping
+    const shipping = orderData?.orders?.shipping || 0; // Fixed shipping
     const discount = 0;
     const total = subtotal + tax + shipping - discount;
-
     return { subtotal, tax, shipping, discount, total };
   };
 
@@ -257,11 +257,11 @@ const OrderDetailsPage = () => {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-green-500/5 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto py-4 sm:py-8 px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="space-y-6 sm:space-y-8">
+      <div className="max-w-7xl mx-auto py-4 sm:py-6 lg:py-8 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Header */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
-            <div className="flex items-center space-x-4">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
               <Link href="/admin/orders">
                 <Button
                   variant="outline"
@@ -269,153 +269,218 @@ const OrderDetailsPage = () => {
                   className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-500 bg-transparent"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Orders
+                  <span className="hidden sm:inline">Back to Orders</span>
+                  <span className="sm:hidden">Back</span>
                 </Button>
               </Link>
+
+              {/* Mobile Actions Menu */}
+              <div className="sm:hidden relative">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMobileActions(!showMobileActions)}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-500 bg-transparent"
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+
+                {showMobileActions && (
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-50">
+                    {isEditing ? (
+                      <>
+                        <button
+                          onClick={handleCancel}
+                          disabled={isUpdating}
+                          className="w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700 flex items-center space-x-2 border-b border-gray-700"
+                        >
+                          <X className="h-4 w-4" />
+                          <span>Cancel</span>
+                        </button>
+                        <button
+                          onClick={handleSave}
+                          disabled={isUpdating}
+                          className="w-full px-4 py-3 text-left text-green-400 hover:bg-gray-700 flex items-center space-x-2"
+                        >
+                          <Save className="h-4 w-4" />
+                          <span>
+                            {isUpdating ? "Saving..." : "Save Changes"}
+                          </span>
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => refetch()}
+                          className="w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700 flex items-center space-x-2 border-b border-gray-700"
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                          <span>Refresh</span>
+                        </button>
+                        <button className="w-full px-4 py-3 text-left text-gray-300 hover:bg-gray-700 flex items-center space-x-2 border-b border-gray-700">
+                          <Printer className="h-4 w-4" />
+                          <span>Print</span>
+                        </button>
+                        <button
+                          onClick={() => setIsEditing(true)}
+                          className="w-full px-4 py-3 text-left text-purple-400 hover:bg-gray-700 flex items-center space-x-2"
+                        >
+                          <Edit className="h-4 w-4" />
+                          <span>Edit Order</span>
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
               <div>
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
                   Order Details
                 </h1>
-                <p className="mt-2 text-gray-400 text-sm sm:text-base">
+                <p className="mt-1 sm:mt-2 text-gray-400 text-xs sm:text-sm lg:text-base break-all sm:break-normal">
                   Order #{actualOrder._id}
                 </p>
               </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              {isEditing ? (
-                <>
-                  <Button
-                    onClick={handleCancel}
-                    variant="outline"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-500 bg-transparent"
-                    disabled={isUpdating}
-                  >
-                    <X className="mr-2 h-4 w-4" />
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSave}
-                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
-                    disabled={isUpdating}
-                  >
-                    <Save className="mr-2 h-4 w-4" />
-                    {isUpdating ? "Saving..." : "Save Changes"}
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    onClick={() => refetch()}
-                    variant="outline"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-500 bg-transparent"
-                  >
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Refresh
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-500 bg-transparent"
-                  >
-                    <Printer className="mr-2 h-4 w-4" />
-                    Print
-                  </Button>
-                  <Button
-                    onClick={() => setIsEditing(true)}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                  >
-                    <Edit className="mr-2 h-4 w-4" />
-                    Edit Order
-                  </Button>
-                </>
-              )}
+
+              {/* Desktop Actions */}
+              <div className="hidden sm:flex items-center space-x-2 lg:space-x-3">
+                {isEditing ? (
+                  <>
+                    <Button
+                      onClick={handleCancel}
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-500 bg-transparent"
+                      disabled={isUpdating}
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleSave}
+                      size="sm"
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                      disabled={isUpdating}
+                    >
+                      <Save className="mr-2 h-4 w-4" />
+                      {isUpdating ? "Saving..." : "Save"}
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      onClick={() => refetch()}
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-500 bg-transparent"
+                    >
+                      <RefreshCw className="mr-2 h-4 w-4" />
+                      <span className="hidden lg:inline">Refresh</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-600 text-gray-300 hover:bg-gray-700/50 hover:text-white hover:border-gray-500 bg-transparent"
+                    >
+                      <Printer className="mr-2 h-4 w-4" />
+                      <span className="hidden lg:inline">Print</span>
+                    </Button>
+                    <Button
+                      onClick={() => setIsEditing(true)}
+                      size="sm"
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                    >
+                      <Edit className="mr-2 h-4 w-4" />
+                      <span className="hidden lg:inline">Edit</span>
+                    </Button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Order Status and Quick Info */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <Card className="hover:shadow-lg transition-all duration-300">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-400">
-                      Order Status
-                    </p>
-                    {isEditing ? (
-                      <select
-                        value={editedOrder?.status || ""}
-                        onChange={(e) =>
-                          handleInputChange("status", e.target.value)
-                        }
-                        className="mt-1 bg-gray-800/50 border border-gray-700/50 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="processing">Processing</option>
-                        <option value="shipped">Shipped</option>
-                        <option value="delivered">Delivered</option>
-                        <option value="cancelled">Cancelled</option>
-                      </select>
-                    ) : (
-                      <div
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
-                          actualOrder.status
-                        )} mt-1`}
-                      >
-                        {getStatusIcon(actualOrder.status)}
-                        <span className="ml-1 capitalize">
-                          {actualOrder.status}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+              <CardContent className="pt-3 sm:p-4">
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-gray-400">
+                    Order Status
+                  </p>
+                  {isEditing ? (
+                    <select
+                      value={editedOrder?.status || ""}
+                      onChange={(e) =>
+                        handleInputChange("status", e.target.value)
+                      }
+                      className="w-full bg-gray-800/50 border border-gray-700/50 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 p-2"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="processing">Processing</option>
+                      <option value="shipped">Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option value="cancelled">Cancelled</option>
+                    </select>
+                  ) : (
+                    <div
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(
+                        actualOrder.status
+                      )}`}
+                    >
+                      {getStatusIcon(actualOrder.status)}
+                      <span className="ml-1 capitalize">
+                        {actualOrder.status}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
             <Card className="hover:shadow-lg transition-all duration-300">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs font-medium text-gray-400">
-                      Payment Status
-                    </p>
-                    {isEditing ? (
-                      <select
-                        value={editedOrder?.payment || ""}
-                        onChange={(e) =>
-                          handleInputChange("payment", e.target.value)
-                        }
-                        className="mt-1 bg-gray-800/50 border border-gray-700/50 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="paid">Paid</option>
-                        <option value="failed">Failed</option>
-                        <option value="refunded">Refunded</option>
-                      </select>
-                    ) : (
-                      <div
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getPaymentStatusColor(
-                          actualOrder.payment
-                        )} mt-1`}
-                      >
-                        <span className="capitalize">
-                          {actualOrder.payment}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+              <CardContent className="pt-3 sm:p-4">
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-gray-400">
+                    Payment Status
+                  </p>
+                  {isEditing ? (
+                    <select
+                      value={editedOrder?.payment || ""}
+                      onChange={(e) =>
+                        handleInputChange("payment", e.target.value)
+                      }
+                      className="w-full bg-gray-800/50 border border-gray-700/50 rounded text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 p-2"
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="paid">Paid</option>
+                      <option value="failed">Failed</option>
+                      <option value="refunded">Refunded</option>
+                    </select>
+                  ) : (
+                    <div
+                      className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getPaymentStatusColor(
+                        actualOrder.payment
+                      )}`}
+                    >
+                      <span className="capitalize">{actualOrder.payment}</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
 
             <Card className="hover:shadow-lg transition-all duration-300">
-              <CardContent className="pt-4">
+              <CardContent className="pt-3 sm:p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-gray-400">
                       Total Amount
                     </p>
-                    <p className="text-lg font-bold text-white">
-                      ${actualOrder.total.toFixed(2)}
+                    <p className="text-lg sm:text-xl font-bold text-white">
+                      ৳ {actualOrder.total.toFixed(2)}
                     </p>
                   </div>
                   <div className="p-2 rounded-lg bg-gradient-to-r from-green-500/20 to-emerald-500/20">
@@ -426,7 +491,7 @@ const OrderDetailsPage = () => {
             </Card>
 
             <Card className="hover:shadow-lg transition-all duration-300">
-              <CardContent className="pt-4">
+              <CardContent className="pt-3 sm:p-4">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-xs font-medium text-gray-400">
@@ -445,139 +510,267 @@ const OrderDetailsPage = () => {
           </div>
 
           {/* Tabs */}
-          <div className="flex space-x-1 p-1 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl w-fit">
-            <button
-              onClick={() => setActiveTab("details")}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                activeTab === "details"
-                  ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30"
-                  : "text-gray-400 hover:text-white hover:bg-gray-700/50"
-              }`}
-            >
-              Order Details
-            </button>
-            <button
-              onClick={() => setActiveTab("customer")}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                activeTab === "customer"
-                  ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30"
-                  : "text-gray-400 hover:text-white hover:bg-gray-700/50"
-              }`}
-            >
-              Customer Info
-            </button>
-            <button
-              onClick={() => setActiveTab("history")}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                activeTab === "history"
-                  ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30"
-                  : "text-gray-400 hover:text-white hover:bg-gray-700/50"
-              }`}
-            >
-              Order History
-            </button>
+          <div className="overflow-x-auto">
+            <div className="flex space-x-1 p-1 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl w-fit min-w-full sm:min-w-0">
+              <button
+                onClick={() => setActiveTab("details")}
+                className={`px-3 sm:px-4 cursor-pointer py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
+                  activeTab === "details"
+                    ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30"
+                    : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+                }`}
+              >
+                Order Details
+              </button>
+              <button
+                onClick={() => setActiveTab("customer")}
+                className={`px-3 sm:px-4 cursor-pointer py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
+                  activeTab === "customer"
+                    ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30"
+                    : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+                }`}
+              >
+                Customer Info
+              </button>
+              <button
+                onClick={() => setActiveTab("history")}
+                className={`px-3 sm:px-4 cursor-pointer py-2 text-xs sm:text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
+                  activeTab === "history"
+                    ? "bg-gradient-to-r from-purple-500/20 to-pink-500/20 text-purple-300 border border-purple-500/30"
+                    : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+                }`}
+              >
+                Order History
+              </button>
+            </div>
           </div>
 
           {/* Tab Content */}
           {activeTab === "details" && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
               {/* Order Items */}
-              <div className="lg:col-span-2">
+              <div className="xl:col-span-2">
                 <Card className="hover:shadow-lg transition-all duration-300">
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-white">
-                      <ShoppingBag className="mr-2 h-5 w-5 text-purple-400" />
+                  <CardHeader className="pb-3 sm:pb-4">
+                    <CardTitle className="flex items-center text-white text-base sm:text-lg">
+                      <ShoppingBag className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />
                       Order Items
                     </CardTitle>
-                    <CardDescription className="text-gray-400">
+                    <CardDescription className="text-gray-400 text-xs sm:text-sm">
                       Products in this order
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
+                  <CardContent className="pt-0">
+                    <div className="space-y-3 sm:space-y-4">
                       {(editedOrder?.items || []).map((item, index) => (
                         <div
                           key={index}
-                          className="flex items-center space-x-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700/50"
+                          className="bg-gray-800/30 rounded-lg border border-gray-700/50 overflow-hidden"
                         >
-                          <Image
-                            src={item.image || "/placeholder.svg"}
-                            alt={item.name}
-                            width={80}
-                            height={80}
-                            className="rounded-lg bg-gray-700 object-cover"
-                          />
-                          <div className="flex-1 space-y-2">
-                            {isEditing ? (
-                              <>
-                                <input
-                                  type="text"
-                                  value={item.name}
-                                  onChange={(e) =>
-                                    handleItemChange(
-                                      index,
-                                      "name",
-                                      e.target.value
-                                    )
-                                  }
-                                  className="w-full bg-gray-800/50 border border-gray-700/50 rounded px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                          {/* Mobile Layout */}
+                          <div className="sm:hidden">
+                            <div className="p-3 space-y-3">
+                              <div className="flex items-start space-x-3">
+                                <Image
+                                  src={item.image || "/placeholder.svg"}
+                                  alt={item.name}
+                                  width={60}
+                                  height={60}
+                                  className="rounded-lg bg-gray-700 object-cover flex-shrink-0"
                                 />
-                                <div className="flex space-x-2">
-                                  <input
-                                    type="number"
-                                    value={item.price}
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        index,
-                                        "price",
-                                        Number.parseFloat(e.target.value)
-                                      )
-                                    }
-                                    className="w-24 bg-gray-800/50 border border-gray-700/50 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                                    step="0.01"
-                                  />
-                                  <input
-                                    type="number"
-                                    value={item.quantity}
-                                    onChange={(e) =>
-                                      handleItemChange(
-                                        index,
-                                        "quantity",
-                                        Number.parseInt(e.target.value)
-                                      )
-                                    }
-                                    className="w-16 bg-gray-800/50 border border-gray-700/50 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                                    min="1"
-                                  />
+                                <div className="flex-1 min-w-0">
+                                  {isEditing ? (
+                                    <input
+                                      type="text"
+                                      value={item.name}
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          index,
+                                          "name",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="w-full bg-gray-800/50 border border-gray-700/50 rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                    />
+                                  ) : (
+                                    <h3 className="font-semibold text-white text-sm leading-tight">
+                                      {item.name}
+                                    </h3>
+                                  )}
+                                  <p className="text-xs text-gray-400 mt-1">
+                                    ID: {item.productId}
+                                  </p>
                                 </div>
-                              </>
-                            ) : (
-                              <>
-                                <h3 className="font-semibold text-white">
-                                  {item.name}
-                                </h3>
-                                <div className="flex items-center space-x-4 text-sm text-gray-400">
-                                  <span>Product ID: {item.productId}</span>
-                                  <span>Price: ${item.price.toFixed(2)}</span>
-                                  <span>Qty: {item.quantity}</span>
+                                <div className="text-right">
+                                  <p className="font-semibold text-white text-sm">
+                                    ৳ {(item.price * item.quantity).toFixed(2)}
+                                  </p>
                                 </div>
-                              </>
-                            )}
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-white text-lg">
-                              ${(item.price * item.quantity).toFixed(2)}
-                            </p>
-                            {isEditing && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleRemoveItem(index)}
-                                className="mt-2 border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500 bg-transparent"
+                              </div>
+
+                              <button
+                                onClick={() => toggleItemExpansion(index)}
+                                className="flex items-center justify-between w-full text-left text-gray-400 hover:text-white transition-colors"
                               >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            )}
+                                <span className="text-xs">
+                                  {expandedItems[index]
+                                    ? "Hide details"
+                                    : "Show details"}
+                                </span>
+                                {expandedItems[index] ? (
+                                  <ChevronUp className="h-4 w-4" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4" />
+                                )}
+                              </button>
+
+                              {expandedItems[index] && (
+                                <div className="pt-2 border-t border-gray-700/50 space-y-2">
+                                  {isEditing ? (
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        <label className="text-xs text-gray-400">
+                                          Price
+                                        </label>
+                                        <input
+                                          type="number"
+                                          value={item.price}
+                                          onChange={(e) =>
+                                            handleItemChange(
+                                              index,
+                                              "price",
+                                              Number.parseFloat(e.target.value)
+                                            )
+                                          }
+                                          className="w-full bg-gray-800/50 border border-gray-700/50 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                          step="0.01"
+                                        />
+                                      </div>
+                                      <div>
+                                        <label className="text-xs text-gray-400">
+                                          Quantity
+                                        </label>
+                                        <input
+                                          type="number"
+                                          value={item.quantity}
+                                          onChange={(e) =>
+                                            handleItemChange(
+                                              index,
+                                              "quantity",
+                                              Number.parseInt(e.target.value)
+                                            )
+                                          }
+                                          className="w-full bg-gray-800/50 border border-gray-700/50 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                          min="1"
+                                        />
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="flex items-center justify-between text-xs text-gray-400">
+                                      <span>
+                                        Price: ৳{item.price.toFixed(2)}
+                                      </span>
+                                      <span>Qty: {item.quantity}</span>
+                                    </div>
+                                  )}
+
+                                  {isEditing && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => handleRemoveItem(index)}
+                                      className="w-full mt-2 border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500 bg-transparent"
+                                    >
+                                      <Trash2 className="h-3 w-3 mr-2" />
+                                      Remove Item
+                                    </Button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Desktop Layout */}
+                          <div className="hidden sm:flex items-center space-x-4 p-4">
+                            <Image
+                              src={item.image || "/placeholder.svg"}
+                              alt={item.name}
+                              width={80}
+                              height={80}
+                              className="rounded-lg bg-gray-700 object-cover"
+                            />
+                            <div className="flex-1 space-y-2">
+                              {isEditing ? (
+                                <>
+                                  <input
+                                    type="text"
+                                    value={item.name}
+                                    onChange={(e) =>
+                                      handleItemChange(
+                                        index,
+                                        "name",
+                                        e.target.value
+                                      )
+                                    }
+                                    className="w-full bg-gray-800/50 border border-gray-700/50 rounded px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                  />
+                                  <div className="flex space-x-2">
+                                    <input
+                                      type="number"
+                                      value={item.price}
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          index,
+                                          "price",
+                                          Number.parseFloat(e.target.value)
+                                        )
+                                      }
+                                      className="w-24 bg-gray-800/50 border border-gray-700/50 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                      step="0.01"
+                                    />
+                                    <input
+                                      type="number"
+                                      value={item.quantity}
+                                      onChange={(e) =>
+                                        handleItemChange(
+                                          index,
+                                          "quantity",
+                                          Number.parseInt(e.target.value)
+                                        )
+                                      }
+                                      className="w-16 bg-gray-800/50 border border-gray-700/50 rounded px-2 py-1 text-white text-xs focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                                      min="1"
+                                    />
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <h3 className="font-semibold text-white">
+                                    {item.name}
+                                  </h3>
+                                  <div className="flex items-center space-x-4 text-sm text-gray-400">
+                                    <span>Product ID: {item.productId}</span>
+                                    <span>Price: ৳{item.price.toFixed(2)}</span>
+                                    <span>Qty: {item.quantity}</span>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="font-semibold text-white text-lg">
+                                ৳ {(item.price * item.quantity).toFixed(2)}
+                              </p>
+                              {isEditing && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleRemoveItem(index)}
+                                  className="mt-2 border-red-500/50 text-red-400 hover:bg-red-500/10 hover:border-red-500 bg-transparent"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -589,40 +782,35 @@ const OrderDetailsPage = () => {
               {/* Order Summary */}
               <div>
                 <Card className="hover:shadow-lg transition-all duration-300">
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-white">
-                      <DollarSign className="mr-2 h-5 w-5 text-green-400" />
+                  <CardHeader className="pb-3 sm:pb-4">
+                    <CardTitle className="flex items-center text-white text-base sm:text-lg">
+                      <DollarSign className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-green-400" />
                       Order Summary
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex justify-between text-gray-400">
+                  <CardContent className="space-y-3 sm:space-y-4 pt-0">
+                    <div className="flex justify-between text-gray-400 text-sm">
                       <span>Subtotal:</span>
-                      <span>${totals.subtotal.toFixed(2)}</span>
+                      <span>৳ {totals.subtotal.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-gray-400">
-                      <span>Tax (8%):</span>
-                      <span>${totals.tax.toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between text-gray-400">
+                    <div className="flex justify-between text-gray-400 text-sm">
                       <span>Shipping:</span>
-                      <span>${totals.shipping.toFixed(2)}</span>
+                      <span>৳ {totals.shipping.toFixed(2)}</span>
                     </div>
-                    <div className="border-t border-gray-700/50 pt-4">
-                      <div className="flex justify-between text-white font-semibold text-lg">
+                    <div className="border-t border-gray-700/50 pt-3 sm:pt-4">
+                      <div className="flex justify-between text-white font-semibold text-base sm:text-lg">
                         <span>Total:</span>
-                        <span>${actualOrder.total.toFixed(2)}</span>
+                        <span>৳ {actualOrder.total.toFixed(2)}</span>
                       </div>
                     </div>
-
-                    <div className="space-y-3 pt-4 border-t border-gray-700/50">
+                    <div className="space-y-3 pt-3 sm:pt-4 border-t border-gray-700/50">
                       <div>
-                        <p className="text-sm font-medium text-gray-400 mb-1">
+                        <p className="text-xs sm:text-sm font-medium text-gray-400 mb-1">
                           Payment Method
                         </p>
                         <div className="flex items-center space-x-2">
                           <CreditCard className="h-4 w-4 text-gray-400" />
-                          <span className="text-white">
+                          <span className="text-white text-sm">
                             {actualOrder.paymentMethod.type}
                           </span>
                         </div>
@@ -643,18 +831,18 @@ const OrderDetailsPage = () => {
           )}
 
           {activeTab === "customer" && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Customer Information */}
               <Card className="hover:shadow-lg transition-all duration-300">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-white">
-                    <User className="mr-2 h-5 w-5 text-purple-400" />
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="flex items-center text-white text-base sm:text-lg">
+                    <User className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />
                     Customer Information
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 sm:space-y-4 pt-0">
                   <div>
-                    <p className="text-sm font-medium text-gray-400 mb-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-400 mb-1">
                       Email
                     </p>
                     {isEditing ? (
@@ -664,37 +852,39 @@ const OrderDetailsPage = () => {
                         onChange={(e) =>
                           handleInputChange("email", e.target.value)
                         }
-                        className="w-full bg-gray-800/50 border border-gray-700/50 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                        className="w-full bg-gray-800/50 border border-gray-700/50 rounded px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                       />
                     ) : (
                       <div className="flex items-center space-x-2">
                         <Mail className="h-4 w-4 text-gray-400" />
-                        <span className="text-white">{actualOrder.email}</span>
+                        <span className="text-white text-sm break-all">
+                          {actualOrder.email}
+                        </span>
                       </div>
                     )}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-400 mb-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-400 mb-1">
                       Customer Name
                     </p>
-                    <p className="text-white">
+                    <p className="text-white text-sm">
                       {actualOrder.shippingAddress.firstName}{" "}
                       {actualOrder.shippingAddress.lastName}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-400 mb-1">
+                    <p className="text-xs sm:text-sm font-medium text-gray-400 mb-1">
                       Order ID
                     </p>
                     <div className="flex items-center space-x-2">
-                      <span className="text-white font-mono text-sm">
+                      <span className="text-white font-mono text-xs break-all">
                         {actualOrder._id}
                       </span>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => copyToClipboard(actualOrder._id)}
-                        className="p-1 h-6 w-6 text-gray-400 hover:text-white"
+                        className="p-1 h-6 w-6 text-gray-400 hover:text-white flex-shrink-0"
                       >
                         <Copy className="h-3 w-3" />
                       </Button>
@@ -705,16 +895,16 @@ const OrderDetailsPage = () => {
 
               {/* Shipping Address */}
               <Card className="hover:shadow-lg transition-all duration-300">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-white">
-                    <MapPin className="mr-2 h-5 w-5 text-blue-400" />
+                <CardHeader className="pb-3 sm:pb-4">
+                  <CardTitle className="flex items-center text-white text-base sm:text-lg">
+                    <MapPin className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
                     Shipping Address
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent className="pt-0">
                   {isEditing ? (
-                    <>
-                      <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <input
                           type="text"
                           placeholder="First Name"
@@ -743,7 +933,7 @@ const OrderDetailsPage = () => {
                         }
                         className="w-full bg-gray-800/50 border border-gray-700/50 rounded px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                       />
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <input
                           type="text"
                           placeholder="City"
@@ -763,7 +953,7 @@ const OrderDetailsPage = () => {
                           className="bg-gray-800/50 border border-gray-700/50 rounded px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         <input
                           type="text"
                           placeholder="ZIP Code"
@@ -783,9 +973,9 @@ const OrderDetailsPage = () => {
                           className="bg-gray-800/50 border border-gray-700/50 rounded px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                         />
                       </div>
-                    </>
+                    </div>
                   ) : (
-                    <div className="text-white">
+                    <div className="text-white text-sm space-y-1">
                       <p className="font-medium">
                         {actualOrder.shippingAddress.firstName}{" "}
                         {actualOrder.shippingAddress.lastName}
@@ -806,31 +996,31 @@ const OrderDetailsPage = () => {
 
           {activeTab === "history" && (
             <Card className="hover:shadow-lg transition-all duration-300">
-              <CardHeader>
-                <CardTitle className="flex items-center text-white">
-                  <Clock className="mr-2 h-5 w-5 text-blue-400" />
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="flex items-center text-white text-base sm:text-lg">
+                  <Clock className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />
                   Order History
                 </CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardDescription className="text-gray-400 text-xs sm:text-sm">
                   Timeline of order status changes and updates
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700/50">
-                    <div className="p-2 rounded-full bg-green-500/20">
+              <CardContent className="pt-0">
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-800/30 rounded-lg border border-gray-700/50">
+                    <div className="p-2 rounded-full bg-green-500/20 flex-shrink-0">
                       <CheckCircle className="h-4 w-4 text-green-400" />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-white">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
+                        <h4 className="font-medium text-white text-sm">
                           Order Created
                         </h4>
-                        <span className="text-sm text-gray-400">
+                        <span className="text-xs text-gray-400">
                           {new Date(actualOrder.createdAt).toLocaleString()}
                         </span>
                       </div>
-                      <p className="text-gray-400 text-sm mt-1">
+                      <p className="text-gray-400 text-xs sm:text-sm mt-1">
                         Order was successfully placed
                       </p>
                       <p className="text-gray-500 text-xs mt-1">
@@ -839,9 +1029,9 @@ const OrderDetailsPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-start space-x-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700/50">
+                  <div className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-800/30 rounded-lg border border-gray-700/50">
                     <div
-                      className={`p-2 rounded-full ${getStatusColor(
+                      className={`p-2 rounded-full flex-shrink-0 ${getStatusColor(
                         actualOrder.status
                       )
                         .replace("text-", "bg-")
@@ -850,16 +1040,16 @@ const OrderDetailsPage = () => {
                     >
                       {getStatusIcon(actualOrder.status)}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-white capitalize">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
+                        <h4 className="font-medium text-white capitalize text-sm">
                           Status: {actualOrder.status}
                         </h4>
-                        <span className="text-sm text-gray-400">
+                        <span className="text-xs text-gray-400">
                           {new Date(actualOrder.updatedAt).toLocaleString()}
                         </span>
                       </div>
-                      <p className="text-gray-400 text-sm mt-1">
+                      <p className="text-gray-400 text-xs sm:text-sm mt-1">
                         Order status updated to {actualOrder.status}
                       </p>
                       <p className="text-gray-500 text-xs mt-1">
@@ -868,9 +1058,9 @@ const OrderDetailsPage = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-start space-x-4 p-4 bg-gray-800/30 rounded-lg border border-gray-700/50">
+                  <div className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-800/30 rounded-lg border border-gray-700/50">
                     <div
-                      className={`p-2 rounded-full ${getPaymentStatusColor(
+                      className={`p-2 rounded-full flex-shrink-0 ${getPaymentStatusColor(
                         actualOrder.payment
                       )
                         .replace("text-", "bg-")
@@ -879,16 +1069,16 @@ const OrderDetailsPage = () => {
                     >
                       <DollarSign className="h-4 w-4" />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-white capitalize">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-1 sm:space-y-0">
+                        <h4 className="font-medium text-white capitalize text-sm">
                           Payment: {actualOrder.payment}
                         </h4>
-                        <span className="text-sm text-gray-400">
+                        <span className="text-xs text-gray-400">
                           {new Date(actualOrder.updatedAt).toLocaleString()}
                         </span>
                       </div>
-                      <p className="text-gray-400 text-sm mt-1">
+                      <p className="text-gray-400 text-xs sm:text-sm mt-1">
                         Payment status: {actualOrder.payment}
                       </p>
                       <p className="text-gray-500 text-xs mt-1">
@@ -903,26 +1093,26 @@ const OrderDetailsPage = () => {
 
           {/* Notes Section */}
           <Card className="hover:shadow-lg transition-all duration-300">
-            <CardHeader>
-              <CardTitle className="flex items-center text-white">
-                <Edit className="mr-2 h-5 w-5 text-yellow-400" />
+            <CardHeader className="pb-3 sm:pb-4">
+              <CardTitle className="flex items-center text-white text-base sm:text-lg">
+                <Edit className="mr-2 h-4 w-4 sm:h-5 sm:w-5 text-yellow-400" />
                 Order Notes
               </CardTitle>
-              <CardDescription className="text-gray-400">
+              <CardDescription className="text-gray-400 text-xs sm:text-sm">
                 Internal notes and customer requests
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-0">
               {isEditing ? (
                 <textarea
                   value={editedOrder?.notes || ""}
                   onChange={(e) => handleInputChange("notes", e.target.value)}
                   placeholder="Add notes about this order..."
                   rows={4}
-                  className="w-full bg-gray-800/50 border border-gray-700/50 rounded px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
+                  className="w-full bg-gray-800/50 border border-gray-700/50 rounded px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
                 />
               ) : (
-                <p className="text-white">
+                <p className="text-white text-sm">
                   {actualOrder.notes || "No notes available for this order."}
                 </p>
               )}
@@ -930,6 +1120,14 @@ const OrderDetailsPage = () => {
           </Card>
         </div>
       </div>
+
+      {/* Click outside to close mobile actions */}
+      {showMobileActions && (
+        <div
+          className="fixed inset-0 z-40 sm:hidden"
+          onClick={() => setShowMobileActions(false)}
+        />
+      )}
     </div>
   );
 };

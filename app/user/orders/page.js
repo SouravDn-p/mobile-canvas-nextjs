@@ -1,4 +1,5 @@
-"use client";
+"use client";;
+
 import { useState } from "react";
 import Image from "next/image";
 import {
@@ -44,7 +45,6 @@ const Select = ({ children, className = "", ...props }) => (
     {children}
   </select>
 );
-
 
 export default function OrdersPage() {
   const { data: session, status } = useSession();
