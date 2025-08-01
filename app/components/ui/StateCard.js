@@ -13,7 +13,7 @@ const StatCard = ({
   <Card
     className={`hover:shadow-2xl ${glowColor} shadow-xl group cursor-pointer transition-all duration-500`}
   >
-    <CardContent className="p-4 sm:p-6">
+    <CardContent className="pt-4 sm:p-6">
       <div className="flex items-center justify-between">
         <div className="min-w-0 flex-1">
           <p className="text-xs sm:text-sm text-gray-400 mb-1 truncate">

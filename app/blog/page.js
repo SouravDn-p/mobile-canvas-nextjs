@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/app/components/ui/button";
 import Card from "@/app/components/ui/card";
@@ -17,6 +17,7 @@ import {
   Clock,
   ChevronDown,
   ArrowUpDown,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 import { useGetBlogsQuery } from "@/redux/api/productapi";
@@ -30,6 +31,21 @@ const BlogPage = () => {
   const [viewMode, setViewMode] = useState("grid");
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+
+  // Debounce search term to avoid too many API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchTerm, selectedCategory, sortBy, sortOrder]);
 
   const {
     data: blogsData,
@@ -39,33 +55,53 @@ const BlogPage = () => {
   } = useGetBlogsQuery({
     page: currentPage,
     limit: 12,
-    search: searchTerm,
+    search: debouncedSearchTerm,
     category: selectedCategory,
     sortBy,
     sortOrder,
   });
 
   const blogs = blogsData?.blogs || [];
+  const filteredBlogs = blogs.filter((blog) => {
+    if (selectedCategory && blog.category !== selectedCategory) return false; 
+    if (debouncedSearchTerm) {
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      return (
+        blog.title.toLowerCase().includes(searchLower) ||
+        blog.content.toLowerCase().includes(searchLower) ||
+        blog.author.toLowerCase().includes(searchLower)
+      );
+    }
+    return true; 
+  });
   const pagination = blogsData?.pagination || {};
 
+
   const categories = [
-    "Technology",
-    "Web Development",
-    "Design",
-    "Programming",
-    "Tutorial",
+    "Gaming",
+    "Accessories",
+    "Gadget Reviews",
+    "Tech Tips",
+    "Product Launches",
     "News",
+    "Tutorials",
+    "Industry Updates",
+  ];
+
+  const sortOptions = [
+    { key: "createdAt", label: "Date", icon: Calendar },
+    { key: "views", label: "Views", icon: Eye },
+    { key: "likes", label: "Likes", icon: Heart },
+    { key: "title", label: "Title", icon: null },
   ];
 
   const handleSearch = (e) => {
     e.preventDefault();
-    setCurrentPage(1);
-    refetch();
+    // Search is now handled by debounced effect
   };
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category === selectedCategory ? "" : category);
-    setCurrentPage(1);
   };
 
   const handleSortChange = (newSortBy) => {
@@ -75,6 +111,13 @@ const BlogPage = () => {
       setSortBy(newSortBy);
       setSortOrder("desc");
     }
+  };
+
+  const clearAllFilters = () => {
+    setSearchTerm("");
+    setSelectedCategory("");
+    setSortBy("createdAt");
+    setSortOrder("desc");
     setCurrentPage(1);
   };
 
@@ -86,12 +129,42 @@ const BlogPage = () => {
     });
   };
 
+  const getActiveFiltersCount = () => {
+    let count = 0;
+    if (searchTerm) count++;
+    if (selectedCategory) count++;
+    if (sortBy !== "createdAt" || sortOrder !== "desc") count++;
+    return count;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
         <div className="flex items-center space-x-3">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
           <span className="text-white text-lg">Loading Blogs...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto">
+            <X className="h-8 w-8 text-red-400" />
+          </div>
+          <h3 className="text-lg font-medium text-white">
+            Error Loading Blogs
+          </h3>
+          <p className="text-gray-400">Please try again later</p>
+          <Button
+            onClick={() => refetch()}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            Retry
+          </Button>
         </div>
       </div>
     );
@@ -122,7 +195,7 @@ const BlogPage = () => {
             <CardContent className="pt-6">
               <div className="space-y-4">
                 {/* Search Bar */}
-                <form onSubmit={handleSearch} className="flex gap-4 ">
+                <form onSubmit={handleSearch} className="flex gap-4">
                   <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                     <input
@@ -132,6 +205,15 @@ const BlogPage = () => {
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 bg-gray-800/50 border border-gray-700/50 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                     />
+                    {searchTerm && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchTerm("")}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                   <Button
                     type="submit"
@@ -142,16 +224,21 @@ const BlogPage = () => {
                 </form>
 
                 {/* Filter Controls */}
-                <div className="flex flex-wrap items-center  justify-between gap-4">
-                  <div className="md:flex grid grid-cols-1  items-center  w-full md:w-fit gap-2 md:space-x-4">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setShowFilters(!showFilters)}
-                      className="border-gray-600 text-gray-300 hover:bg-gray-700/50 bg-transparent"
+                      className="border-gray-600 text-gray-300 hover:bg-gray-700/50 bg-transparent relative"
                     >
                       <Filter className="h-4 w-4 mr-2" />
                       Filters
+                      {getActiveFiltersCount() > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                          {getActiveFiltersCount()}
+                        </span>
+                      )}
                       <ChevronDown
                         className={`h-4 w-4 ml-2 transition-transform ${
                           showFilters ? "rotate-180" : ""
@@ -159,73 +246,54 @@ const BlogPage = () => {
                       />
                     </Button>
 
+                    {/* Clear Filters */}
+                    {getActiveFiltersCount() > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearAllFilters}
+                        className="border-red-600/50 text-red-400 hover:bg-red-500/10 bg-transparent"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Clear All
+                      </Button>
+                    )}
+
                     {/* Sort Options */}
-                    <div className="md:flex items-center space-x-2 grid grid-cols-2 w-full flex-wrap gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSortChange("createdAt")}
-                        className={`border-gray-600 hover:bg-gray-700/50 bg-transparent  ${
-                          sortBy === "createdAt"
-                            ? "text-purple-400 border-purple-500/50"
-                            : "text-gray-300"
-                        }`}
-                      >
-                        <Calendar className="h-4 w-4 mr-1" />
-                        Date
-                        {sortBy === "createdAt" && (
-                          <ArrowUpDown
-                            className={`h-3 w-3 ml-1 ${
-                              sortOrder === "desc" ? "rotate-180" : ""
+                    <div className="flex flex-wrap items-center gap-2">
+                      {sortOptions.map((option) => {
+                        const IconComponent = option.icon;
+                        return (
+                          <Button
+                            key={option.key}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSortChange(option.key)}
+                            className={`border-gray-600 hover:bg-gray-700/50 bg-transparent ${
+                              sortBy === option.key
+                                ? "text-purple-400 border-purple-500/50"
+                                : "text-gray-300"
                             }`}
-                          />
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSortChange("views")}
-                        className={`border-gray-600 hover:bg-gray-700/50 bg-transparent ${
-                          sortBy === "views"
-                            ? "text-purple-400 border-purple-500/50"
-                            : "text-gray-300"
-                        }`}
-                      >
-                        <Eye className="h-4 w-4 mr-1" />
-                        Views
-                        {sortBy === "views" && (
-                          <ArrowUpDown
-                            className={`h-3 w-3 ml-1 ${
-                              sortOrder === "desc" ? "rotate-180" : ""
-                            }`}
-                          />
-                        )}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleSortChange("likes")}
-                        className={`border-gray-600 hover:bg-gray-700/50 bg-transparent ${
-                          sortBy === "likes"
-                            ? "text-purple-400 border-purple-500/50"
-                            : "text-gray-300"
-                        }`}
-                      >
-                        <Heart className="h-4 w-4 mr-1" />
-                        Likes
-                        {sortBy === "likes" && (
-                          <ArrowUpDown
-                            className={`h-3 w-3 ml-1 ${
-                              sortOrder === "desc" ? "rotate-180" : ""
-                            }`}
-                          />
-                        )}
-                      </Button>
+                          >
+                            {IconComponent && (
+                              <IconComponent className="h-4 w-4 mr-1" />
+                            )}
+                            {option.label}
+                            {sortBy === option.key && (
+                              <ArrowUpDown
+                                className={`h-3 w-3 ml-1 transition-transform ${
+                                  sortOrder === "desc" ? "rotate-180" : ""
+                                }`}
+                              />
+                            )}
+                          </Button>
+                        );
+                      })}
                     </div>
                   </div>
 
                   {/* View Mode Toggle */}
-                  <div className=" md:flex items-center space-x-2">
+                  <div className="flex items-center space-x-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -255,28 +323,76 @@ const BlogPage = () => {
 
                 {/* Category Filters */}
                 {showFilters && (
-                  <div className="pt-4 border-t border-gray-700/50">
+                  <div className="pt-4 border-t border-gray-700/50 animate-in slide-in-from-top-2 duration-200">
                     <div className="space-y-3">
-                      <h3 className="text-sm font-medium text-gray-300">
-                        Categories
-                      </h3>
-                      <div className="grid grid-cols-1 md:flex md:flex-wrap gap-2">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-medium text-gray-300">
+                          Categories
+                        </h3>
+                        {selectedCategory && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedCategory("")}
+                            className="border-gray-600 text-gray-400 hover:bg-gray-700/50 bg-transparent text-xs"
+                          >
+                            Clear Category
+                          </Button>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
                         {categories.map((category) => (
                           <Button
                             key={category}
                             variant="outline"
                             size="sm"
                             onClick={() => handleCategoryChange(category)}
-                            className={`border-gray-600 hover:bg-gray-700/50 bg-transparent ${
+                            className={`border-gray-600 hover:bg-gray-700/50 bg-transparent transition-all duration-200 ${
                               selectedCategory === category
                                 ? "text-purple-400 border-purple-500/50 bg-purple-500/10"
                                 : "text-gray-300"
                             }`}
                           >
                             {category}
+                            {selectedCategory === category && (
+                              <X className="h-3 w-3 ml-1" />
+                            )}
                           </Button>
                         ))}
                       </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Active Filters Display */}
+                {(searchTerm || selectedCategory) && (
+                  <div className="pt-4 border-t border-gray-700/50">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-sm text-gray-400">
+                        Active filters:
+                      </span>
+                      {searchTerm && (
+                        <span className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full flex items-center">
+                          Search: "{searchTerm}"
+                          <button
+                            onClick={() => setSearchTerm("")}
+                            className="ml-1 hover:text-blue-200"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      )}
+                      {selectedCategory && (
+                        <span className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full flex items-center">
+                          Category: {selectedCategory}
+                          <button
+                            onClick={() => setSelectedCategory("")}
+                            className="ml-1 hover:text-purple-200"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}
@@ -284,8 +400,22 @@ const BlogPage = () => {
             </CardContent>
           </Card>
 
+          {/* Results Summary */}
+          {filteredBlogs.length > 0 && (
+            <div className="flex items-center justify-between text-sm text-gray-400">
+              <span>
+                Showing {filteredBlogs.length} of {pagination.total || 0} filteredBlogs
+                {searchTerm && ` for "${searchTerm}"`}
+                {selectedCategory && ` in ${selectedCategory}`}
+              </span>
+              <span>
+                Page {currentPage} of {pagination.pages || 1}
+              </span>
+            </div>
+          )}
+
           {/* Blog Grid/List */}
-          {blogs.length > 0 ? (
+          {filteredBlogs.length > 0 ? (
             <div
               className={
                 viewMode === "grid"
@@ -293,28 +423,31 @@ const BlogPage = () => {
                   : "space-y-6"
               }
             >
-              {blogs.map((blog) => (
+              {filteredBlogs.map((blog) => (
                 <Card
                   key={blog._id}
-                  className={`hover:shadow-lg transition-all duration-300 cursor-pointer ${
+                  className={`hover:shadow-lg transition-all duration-300 cursor-pointer group ${
                     viewMode === "list" ? "flex flex-row" : ""
                   }`}
                   onClick={() => router.push(`/blog/${blog._id}`)}
                 >
                   <div className={viewMode === "list" ? "w-1/3" : ""}>
-                    <Image
-                      src={
-                        blog.image || "/placeholder.svg?height=200&width=400"
-                      }
-                      alt={blog.title}
-                      width={400}
-                      height={200}
-                      className={`object-cover ${
-                        viewMode === "list"
-                          ? "w-full h-full rounded-l-lg"
-                          : "w-full h-48 rounded-t-lg"
-                      }`}
-                    />
+                    <div className="relative overflow-hidden">
+                      <Image
+                        src={
+                          blog.image || "/placeholder.svg?height=200&width=400"
+                        }
+                        alt={blog.title}
+                        width={400}
+                        height={200}
+                        className={`object-cover transition-transform duration-300 group-hover:scale-105 ${
+                          viewMode === "list"
+                            ? "w-full h-full rounded-l-lg"
+                            : "w-full h-48 rounded-t-lg"
+                        }`}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </div>
                   </div>
                   <div className={viewMode === "list" ? "flex-1" : ""}>
                     <CardContent className="p-6">
@@ -327,21 +460,17 @@ const BlogPage = () => {
                             {formatDate(blog.createdAt)}
                           </span>
                         </div>
-
-                        <h3 className="text-lg font-semibold text-white line-clamp-2">
+                        <h3 className="text-lg font-semibold text-white line-clamp-2 group-hover:text-purple-300 transition-colors">
                           {blog.title}
                         </h3>
-
                         <p className="text-gray-400 text-sm line-clamp-3">
-                          {blog.content.substring(0, 150)}...
+                          {blog.content?.substring(0, 150)}...
                         </p>
-
-                        <div className="flex items-center justify-between pt-3 border-t border-gray-700/50">
+                        <div className="flex flex-wrap gap-2 items-center justify-between pt-3 border-t border-gray-700/50">
                           <div className="flex items-center space-x-1 text-xs text-gray-400">
                             <User className="h-3 w-3" />
                             <span>{blog.author}</span>
                           </div>
-
                           <div className="flex items-center space-x-4 text-xs text-gray-400">
                             <div className="flex items-center space-x-1">
                               <Eye className="h-3 w-3" />
@@ -374,18 +503,28 @@ const BlogPage = () => {
                   <Search className="h-8 w-8 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-white">
-                  No blogs found
+                  No Blogs found
                 </h3>
                 <p className="text-gray-400">
-                  Try adjusting your search or filter criteria
+                  {searchTerm || selectedCategory
+                    ? "Try adjusting your search or filter criteria"
+                    : "No blogs available at the moment"}
                 </p>
+                {(searchTerm || selectedCategory) && (
+                  <Button
+                    onClick={clearAllFilters}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    Clear Filters
+                  </Button>
+                )}
               </div>
             </div>
           )}
 
           {/* Pagination */}
           {pagination.pages > 1 && (
-            <div className="flex justify-center space-x-2">
+            <div className="flex flex-wrap justify-center items-center gap-2">
               <Button
                 variant="outline"
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
@@ -395,8 +534,19 @@ const BlogPage = () => {
                 Previous
               </Button>
 
+              {/* Page Numbers */}
               {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
-                const page = i + 1;
+                let page;
+                if (pagination.pages <= 5) {
+                  page = i + 1;
+                } else if (currentPage <= 3) {
+                  page = i + 1;
+                } else if (currentPage >= pagination.pages - 2) {
+                  page = pagination.pages - 4 + i;
+                } else {
+                  page = currentPage - 2 + i;
+                }
+
                 return (
                   <Button
                     key={page}
@@ -404,7 +554,7 @@ const BlogPage = () => {
                     onClick={() => setCurrentPage(page)}
                     className={`border-gray-600 hover:bg-gray-700/50 bg-transparent ${
                       currentPage === page
-                        ? "text-purple-400 border-purple-500/50"
+                        ? "text-purple-400 border-purple-500/50 bg-purple-500/10"
                         : "text-gray-300"
                     }`}
                   >

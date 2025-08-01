@@ -226,8 +226,8 @@ export default function EditBlogPage({ params }) {
 
       <div className="container mx-auto p-6 max-w-6xl relative z-10">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-          <div className="flex items-center gap-4">
+        <div className="grid grid-cols-1 md:flex  flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+          <div className="grid grid-cols-1  md:flex  items-center gap-4">
             <Button
               variant="outline"
               onClick={() => router.push("/admin/blog")}
@@ -236,7 +236,7 @@ export default function EditBlogPage({ params }) {
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Blogs
             </Button>
-            <div>
+            <div className="w-full">
               <h1 className="text-2xl font-bold text-white">Edit Blog Post</h1>
               <p className="text-gray-400">
                 Last updated: {formatDate(blog?.updatedAt || blog?.createdAt)}
@@ -244,7 +244,7 @@ export default function EditBlogPage({ params }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-2 md:flex  items-center gap-2">
             <Button
               variant="outline"
               onClick={handlePreview}
@@ -265,7 +265,7 @@ export default function EditBlogPage({ params }) {
             <Button
               onClick={() => handleSave("published")}
               disabled={isUpdating}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              className="bg-gradient-to-r col-span-2 from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
             >
               {isUpdating ? "Publishing..." : "Publish"}
             </Button>
@@ -274,24 +274,24 @@ export default function EditBlogPage({ params }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            <Tabs defaultValue="content" className="w-full">
+          <div className="lg:col-span-2 space-y-6 cursor-pointer">
+            <Tabs defaultValue="content" className="w-full cursor-pointer">
               <TabsList className="grid w-full grid-cols-3 bg-gray-800/50 border border-gray-700/50">
                 <TabsTrigger
                   value="content"
-                  className="text-gray-300 data-[state=active]:bg-purple-500/20 data-[state=active]:text-white"
+                  className="text-gray-300 cursor-pointer data-[state=active]:bg-purple-500/20 data-[state=active]:text-white"
                 >
                   Content
                 </TabsTrigger>
                 <TabsTrigger
                   value="seo"
-                  className="text-gray-300 data-[state=active]:bg-purple-500/20 data-[state=active]:text-white"
+                  className="text-gray-300 cursor-pointer data-[state=active]:bg-purple-500/20 data-[state=active]:text-white"
                 >
                   SEO
                 </TabsTrigger>
                 <TabsTrigger
                   value="analytics"
-                  className="text-gray-300 data-[state=active]:bg-purple-500/20 data-[state=active]:text-white"
+                  className="text-gray-300 cursor-pointer data-[state=active]:bg-purple-500/20 data-[state=active]:text-white"
                 >
                   Analytics
                 </TabsTrigger>

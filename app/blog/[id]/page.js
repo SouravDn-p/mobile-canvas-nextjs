@@ -267,7 +267,7 @@ const BlogDetailPage = () => {
 
                 {/* Action Buttons */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-700/50">
-                  <div className="flex items-center space-x-4">
+                  <div className="gap-2 w-full grid grid-cols-2 md:flex  items-center space-x-4">
                     <Button
                       variant="outline"
                       size="sm"
@@ -311,10 +311,10 @@ const BlogDetailPage = () => {
                       <Share2 className="h-4 w-4 mr-2" />
                       Share
                     </Button>
-                  </div>
-                  <div className="flex items-center space-x-1 text-sm text-gray-400">
-                    <MessageCircle className="h-4 w-4" />
-                    <span>{blog.comments?.length || 0} comments</span>
+                    <div className="flex items-center space-x-1 text-sm text-gray-400">
+                      <MessageCircle className="h-4 w-4" />
+                      <span>{blog.comments?.length || 0} comments</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -351,7 +351,7 @@ const BlogDetailPage = () => {
           <Card className="hover:shadow-lg transition-all duration-300">
             <CardHeader>
               <CardTitle className="flex items-center justify-between text-white">
-                <div className="flex items-center">
+                <div className="flex items-center text-xl md:text-2xl font-semibold">
                   <MessageCircle className="mr-2 h-5 w-5 text-blue-400" />
                   Comments ({blog.comments?.length || 0})
                 </div>

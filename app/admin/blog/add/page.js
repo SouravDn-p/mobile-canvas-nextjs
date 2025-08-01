@@ -44,11 +44,6 @@ const AddBlogPage = () => {
   const [imagePreview, setImagePreview] = useState("");
 
   const categories = [
-    "Smartphones",
-    "Laptops",
-    "Smart Home",
-    "Audio Devices",
-    "Wearables",
     "Gaming",
     "Accessories",
     "Gadget Reviews",
@@ -170,7 +165,7 @@ const AddBlogPage = () => {
               </Link>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-wrap gap-2 items-center space-x-3">
               <Button
                 variant="outline"
                 onClick={() => setIsPreview(!isPreview)}
@@ -526,6 +521,14 @@ const AddBlogPage = () => {
                     </div>
                   </CardContent>
                 </Card>
+                {/* <Button
+                  onClick={() => handleSubmit("published")}
+                  disabled={isAdding}
+                  className="bg-gradient-to-r w-full from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  {isAdding ? "Publishing..." : "Publish"}
+                </Button> */}
               </div>
             </div>
           )}
