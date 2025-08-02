@@ -22,7 +22,7 @@ const categories = [
   "Tablets",
   "Laptops",
   "Audio",
-  "Wearables",
+  "Accessories",
   "Mobile Cover",
 ];
 
@@ -160,7 +160,7 @@ export default function ProductsPage() {
                     {category}
                   </Button>
                 ))}
-                <div >
+                <div>
                   <Select
                     value={sortBy}
                     onValueChange={setSortBy}

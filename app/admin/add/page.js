@@ -18,6 +18,8 @@ import {
   Calendar,
   AlertCircle,
   List,
+  TrendingUp,
+  Percent,
 } from "lucide-react";
 import { ToastContainer } from "react-toastify";
 import Image from "next/image";
@@ -25,7 +27,7 @@ import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import { useCreateProductMutation } from "@/redux/api/productapi";
 
-// Validation Schema
+// Enhanced Validation Schema with new fields
 const productSchema = z.object({
   name: z
     .string()
@@ -39,6 +41,12 @@ const productSchema = z.object({
     .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
       message: "Price must be a positive number",
     }),
+  originalPrice: z
+    .string()
+    .optional()
+    .refine((val) => !val || (!isNaN(Number(val)) && Number(val) > 0), {
+      message: "Original price must be a positive number",
+    }),
   stock: z
     .string()
     .min(1, "Stock quantity is required")
@@ -51,6 +59,8 @@ const productSchema = z.object({
     .min(3, "SKU must be at least 3 characters"),
   supplier: z.string().optional(),
   status: z.enum(["In Stock", "Low Stock", "Out of Stock"]),
+  trending: z.boolean().default(false),
+  isOnSale: z.boolean().default(false),
   specifications: z
     .array(
       z.object({
@@ -61,7 +71,7 @@ const productSchema = z.object({
     .optional(),
   features: z
     .array(z.string().min(1, "Feature description is required"))
-    .optional(), // Added features to schema
+    .optional(),
 });
 
 // Enhanced Inline Components with Dark Theme
@@ -193,6 +203,41 @@ const Select = ({ children, className = "", error = false, ...props }) => (
   </select>
 );
 
+// New Checkbox Component
+const Checkbox = ({ className = "", checked = false, onChange, ...props }) => (
+  <div className="relative">
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={onChange}
+      className="sr-only"
+      {...props}
+    />
+    <div
+      className={`w-6 h-6 rounded-lg border-2 transition-all duration-300 cursor-pointer ${
+        checked
+          ? "bg-gradient-to-r from-blue-600 to-purple-600 border-blue-500"
+          : "border-gray-600 bg-gray-800/50 hover:border-gray-500"
+      } ${className}`}
+      onClick={() => onChange?.({ target: { checked: !checked } })}
+    >
+      {checked && (
+        <svg
+          className="w-4 h-4 text-white absolute top-0.5 left-0.5"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fillRule="evenodd"
+            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+            clipRule="evenodd"
+          />
+        </svg>
+      )}
+    </div>
+  </div>
+);
+
 const ErrorMessage = ({ children }) => (
   <div className="flex items-center mt-1 text-sm text-red-400">
     <AlertCircle className="h-4 w-4 mr-1" />
@@ -212,6 +257,8 @@ export default function AddProductPage() {
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState([]);
   const [createProduct, { isLoading }] = useCreateProductMutation();
+  const [uploading, setUploading] = useState(false); // State for image upload loading
+  const [cloudinaryUrls, setCloudinaryUrls] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
   const router = useRouter();
 
@@ -230,10 +277,13 @@ export default function AddProductPage() {
       description: "",
       category: "",
       price: "",
+      originalPrice: "",
       stock: "",
       sku: "",
       supplier: "",
       status: "In Stock",
+      trending: false,
+      isOnSale: false,
       specifications: [{ key: "", value: "" }],
       features: ["", "", ""],
     },
@@ -259,7 +309,6 @@ export default function AddProductPage() {
     "Tablets",
     "Laptops",
     "Audio",
-    "Wearables",
     "Electronics",
     "Accessories",
     "Mobile Cover",
@@ -274,16 +323,19 @@ export default function AddProductPage() {
       // Filter out empty features
       const filteredFeatures =
         data.features?.filter((feature) => feature) || [];
-
+      console.log(images);
       const productData = {
         ...data,
         price: Number(data.price),
+        originalPrice: data.originalPrice ? Number(data.originalPrice) : null,
         stock: Number(data.stock),
         specifications: filteredSpecs,
-        features: filteredFeatures, // Include filtered features
+        features: filteredFeatures,
         images: images,
+        trending: data.trending,
+        isOnSale: data.isOnSale,
+        image: images.length > 0 ? images[0].url : null,
       };
-
       // ✅ Real API call
       await createProduct(productData).unwrap();
 
@@ -311,32 +363,59 @@ export default function AddProductPage() {
     }
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (images.length + files.length > 5) {
       alert("Maximum 5 images allowed");
       return;
     }
+    setUploading(true); // Start uploading state
+    const formData = new FormData();
     files.forEach((file) => {
       if (file.size > 10 * 1024 * 1024) {
-        // 10MB limit
-        alert(`File ${file.name} is too large. Maximum size is 10MB.`);
+        Swal.fire({
+          icon: "error",
+          title: "File Too Large",
+          text: "Each image must be less than 10MB.",
+          confirmButtonColor: "#EF4444",
+        });
+        setUploading(false);
         return;
       }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setImages((prev) => [
-          ...prev,
-          {
-            id: Date.now() + Math.random(),
-            url: event.target.result,
-            file: file,
-            name: file.name,
-          },
-        ]);
-      };
-      reader.readAsDataURL(file);
+      formData.append("images", file);
     });
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        throw new Error("Upload failed");
+      }
+      const data = await res.json();
+      const uploadedUrls = data.urls;
+      const newImages = files
+        .filter((file) => file.size <= 10 * 1024 * 1024)
+        .map((file, index) => ({
+          id: Date.now() + Math.random(),
+          url: uploadedUrls[index],
+          file: file,
+          name: file.name,
+        }));
+      setImages((prev) => [...prev, ...newImages]);
+      setCloudinaryUrls((prev) => [...prev, ...uploadedUrls]);
+      console.log("Uploaded URLs:", uploadedUrls);
+    } catch (error) {
+      console.error("Upload error:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Upload Failed",
+        text: "Could not upload images to Cloudinary.",
+        confirmButtonColor: "#EF4444",
+      });
+    } finally {
+      setUploading(false); // End uploading state
+    }
   };
 
   const removeImage = (id) => {
@@ -375,7 +454,7 @@ export default function AddProductPage() {
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center space-x-4">
               <Link
-                href="/products"
+                href="/admin/products"
                 className="flex items-center text-blue-400 hover:text-blue-300 transition-colors"
               >
                 <ArrowLeft className="h-5 w-5 mr-2" />
@@ -441,7 +520,11 @@ export default function AddProductPage() {
                       />
                     </div>
                   </FormField>
-                  <FormField label="Price" required error={errors.price}>
+                  <FormField
+                    label="Current Price"
+                    required
+                    error={errors.price}
+                  >
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                       <Input
@@ -453,6 +536,25 @@ export default function AddProductPage() {
                         error={!!errors.price}
                       />
                     </div>
+                  </FormField>
+                  <FormField
+                    label="Original Price"
+                    error={errors.originalPrice}
+                  >
+                    <div className="relative">
+                      <Percent className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                      <Input
+                        {...register("originalPrice")}
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00 (optional)"
+                        className="pl-11"
+                        error={!!errors.originalPrice}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Leave empty if not on sale
+                    </p>
                   </FormField>
                   <FormField
                     label="Stock Quantity"
@@ -516,6 +618,61 @@ export default function AddProductPage() {
                     />
                   </FormField>
                 </div>
+                {/* New Boolean Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-700/50">
+                  <FormField label="Product Flags" error={errors.trending}>
+                    <div className="space-y-4">
+                      <Controller
+                        name="trending"
+                        control={control}
+                        render={({ field }) => (
+                          <div className="flex items-center space-x-3">
+                            <Checkbox
+                              checked={field.value}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                            <div className="flex items-center space-x-2">
+                              <TrendingUp className="h-5 w-5 text-orange-400" />
+                              <Label>Mark as Trending</Label>
+                            </div>
+                          </div>
+                        )}
+                      />
+                      <Controller
+                        name="isOnSale"
+                        control={control}
+                        render={({ field }) => (
+                          <div className="flex items-center space-x-3">
+                            <Checkbox
+                              checked={field.value}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                            <div className="flex items-center space-x-2">
+                              <Percent className="h-5 w-5 text-green-400" />
+                              <Label>Product is On Sale</Label>
+                            </div>
+                          </div>
+                        )}
+                      />
+                    </div>
+                  </FormField>
+                  <div className="flex flex-col justify-center">
+                    <div className="p-4 bg-gray-800/30 rounded-xl border border-gray-700/30">
+                      <h4 className="text-sm font-medium text-gray-300 mb-2">
+                        Product Visibility
+                      </h4>
+                      <div className="space-y-2 text-xs text-gray-500">
+                        <p>
+                          • <strong>Trending:</strong> Shows in trending section
+                        </p>
+                        <p>
+                          • <strong>On Sale:</strong> Displays sale badge and
+                          pricing
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <FormField label="Description" error={errors.description}>
                   <Textarea
                     {...register("description")}
@@ -559,8 +716,19 @@ export default function AddProductPage() {
                       accept="image/*"
                       onChange={handleImageUpload}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      disabled={images.length >= 5}
+                      disabled={images.length >= 5 || uploading} // Disable input during upload
                     />
+                    {/* Loading Overlay */}
+                    {uploading && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl z-10">
+                        <div className="space-y-2 flex flex-col items-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+                          <p className="text-gray-200 text-lg font-medium">
+                            Uploading...
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   {/* Image Preview */}
                   {images.length > 0 && (

@@ -38,7 +38,7 @@ const categories = [
   { id: "tablets", name: "Tablets", icon: "📟" },
   { id: "laptops", name: "Laptops", icon: "💻" },
   { id: "accessories", name: "Accessories", icon: "🎧" },
-  { id: "wearables", name: "Wearables", icon: "⌚" },
+  { id: "Accessories", name: "Accessories", icon: "⌚" },
   { id: "Electronics", name: "Electronics", icon: "🔌" },
 ];
 
@@ -375,7 +375,80 @@ export default function ProductDetails() {
   };
 
   const handleBuyNow = async () => {
-    if (!email || isBuyingNow) return;
+    if (isBuyingNow) return;
+
+    if (!email) {
+      Swal.fire({
+        icon: "warning",
+        title: "Login Required",
+        text: "Please log in to buy this product.",
+        confirmButtonText: "Login",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          router.push("/login");
+        }
+      });
+      return;
+    }
+
+    // To do for future work
+    //  if (!email) {
+    //    Swal.fire({
+    //      icon: "info",
+    //      title: "Login Required",
+    //      text: "Please login to proceed with buying.",
+    //      showCancelButton: true,
+    //      confirmButtonText: "Login",
+    //      cancelButtonText: "Continue as Guest",
+    //      toast: true,
+    //      position: "top-end",
+    //    }).then((result) => {
+    //      if (result.isConfirmed) {
+    //        router.push("/login");
+    //      } else {
+    //        // Save product and quantity to localStorage for guest checkout
+    //        const guestCart = JSON.parse(
+    //          localStorage.getItem("guestCart") || "[]"
+    //        );
+    //        const existingItem = guestCart.find(
+    //          (item) => item.productId === product._id
+    //        );
+    //        let updatedCart;
+    //        if (existingItem) {
+    //          updatedCart = guestCart.map((item) =>
+    //            item.productId === product._id
+    //              ? { ...item, quantity: item.quantity + quantity }
+    //              : item
+    //          );
+    //        } else {
+    //          updatedCart = [
+    //            ...guestCart,
+    //            {
+    //              productId: product._id,
+    //              name: product.name,
+    //              price: product.price,
+    //              quantity: quantity,
+    //              image: product.image,
+    //            },
+    //          ];
+    //        }
+    //        localStorage.setItem("guestCart", JSON.stringify(updatedCart));
+    //        Swal.fire({
+    //          icon: "success",
+    //          title: "Proceeding to Checkout!",
+    //          text: "Product added for guest checkout.",
+    //          timer: 1500,
+    //          showConfirmButton: false,
+    //          toast: true,
+    //          position: "top-end",
+    //        });
+    //        setTimeout(() => {
+    //          router.push("/user/checkoutGuest");
+    //        }, 1500);
+    //      }
+    //    });
+    //    return;
+    //  }
 
     setIsBuyingNow(true);
     try {
@@ -470,7 +543,10 @@ export default function ProductDetails() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <ShareButton className="cursor-pointer" productName={product.name} />
+                <ShareButton
+                  className="cursor-pointer"
+                  productName={product.name}
+                />
                 <button
                   onClick={handleWishlistToggle}
                   disabled={isUpdating || !email}
@@ -1010,9 +1086,9 @@ export default function ProductDetails() {
 
                     <button
                       onClick={handleBuyNow}
-                      disabled={product.stock === 0 || isBuyingNow || !email}
+                      disabled={product.stock === 0 || isBuyingNow}
                       className={`flex-1 cursor-pointer py-4 rounded-2xl font-semibold text-white text-lg transition-all duration-300 ${
-                        product.stock > 0 && email && !isBuyingNow
+                        product.stock > 0 && !isBuyingNow
                           ? "bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 hover:scale-105 shadow-lg shadow-orange-500/25"
                           : "bg-gray-600 cursor-not-allowed"
                       }`}
@@ -1024,8 +1100,6 @@ export default function ProductDetails() {
                         </div>
                       ) : product.stock === 0 ? (
                         "Out of Stock"
-                      ) : !email ? (
-                        "Login to Buy Now"
                       ) : (
                         <>
                           <Zap className="inline h-5 w-5 mr-2" />

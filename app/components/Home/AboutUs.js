@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import { Award, Heart, Shield, Zap, Target, CheckCircle } from "lucide-react";
-
+import rahimImage from "@/public/rahim.jpg"; // Adjust the path as necessary
 export default function AboutUs() {
   const coreValues = [
     {
@@ -74,21 +73,20 @@ export default function AboutUs() {
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-lg opacity-50"></div>
                 <Image
-                  src="/placeholder.svg?height=300&width=300"
+                  src={rahimImage}
                   alt="CEO & Founder"
                   width={300}
                   height={300}
                   className="relative rounded-full mx-auto border-4 border-gradient-to-r from-blue-500 to-purple-500"
                 />
                 {/* Experience Badge */}
-                <div className="absolute -bottom-4 -right-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-full font-bold shadow-lg">
+                {/* <div className="absolute -bottom-4 -right-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-full font-bold shadow-lg">
                   <Award className="h-4 w-4 inline mr-1" />
                   5+ Years
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
-
           {/* Owner Story */}
           <div className="space-y-6">
             <div>
@@ -96,34 +94,29 @@ export default function AboutUs() {
                 Meet Our Founder
               </h3>
               <p className="text-blue-400 font-semibold text-lg">
-                John Smith, CEO & Founder
+                Rahim Khan, Owner & Shopkeeper
               </p>
             </div>
 
             <blockquote className="text-lg sm:text-xl text-gray-300 italic border-l-4 border-blue-500 pl-6 py-4 bg-gray-800/30 rounded-r-lg">
-              &quot;Technology should connect us, not complicate our lives.
-              That&apos;s why we created Mobile Canvas - to make mobile
-              technology accessible, reliable, and meaningful for
-              everyone.&quot;
+              &quot;We believe technology should be simple and helpful for
+              everyone in our community. Mobile Canvas is here to serve our
+              neighbors with honest advice and reliable service.&quot;
             </blockquote>
 
             <div className="space-y-4 text-gray-300">
               <p>
-                With over 5 years of experience in the mobile technology
-                industry, John founded Mobile Canvas with a simple vision: to
-                bridge the gap between cutting-edge technology and everyday
-                users.
+                Mobile Canvas began as a small local shop in Bangladesh, founded
+                by Rahim to help people with their mobile devices.
               </p>
               <p>
-                Starting from a small garage in 2020, Mobile Canvas has grown
-                into a trusted platform serving over 50,000 customers worldwide.
-                Our journey is driven by passion, innovation, and an unwavering
-                commitment to customer satisfaction.
+                We offer phones, accessories, and repairs—always with honest
+                advice and friendly service.
               </p>
               <p>
-                Today, we continue to push boundaries, exploring new
-                technologies and creating solutions that make a real difference
-                in people&apos;s lives.
+                As we grow, our focus remains on friendly service, fair prices,
+                and honest advice. We welcome everyone to visit our shop and
+                experience the Mobile Canvas difference.
               </p>
             </div>
           </div>
@@ -194,14 +187,6 @@ export default function AboutUs() {
             Experience the Mobile Canvas difference today and discover why
             we&apos;re the trusted choice for mobile technology solutions.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 hover:scale-105 shadow-lg">
-              Explore Products
-            </button>
-            <button className="px-8 py-3 border border-gray-600 text-gray-300 hover:text-white hover:border-gray-500 hover:bg-gray-800/50 font-semibold rounded-xl transition-all duration-300">
-              Contact Us
-            </button>
-          </div>
         </div>
       </div>
     </section>

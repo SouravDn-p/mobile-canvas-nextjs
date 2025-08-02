@@ -8,7 +8,7 @@ import Button from "../components/ui/button";
 import Image from "next/image";
 import Card from "../components/ui/card";
 import { signIn, useSession } from "next-auth/react";
-import { Package, Eye, EyeOff, Mail, Lock, Github, Shield } from "lucide-react";
+import { Package, Eye, EyeOff, Mail, Lock, Shield } from "lucide-react";
 import CardHeader from "../components/ui/cardHeader";
 import CardTitle from "../components/ui/card/cardTitle";
 import CardDescription from "../components/ui/card/CardDescription";
@@ -130,9 +130,9 @@ export default function LoginPage() {
 
           <CardContent className="space-y-6">
             {/* Social Sign In Buttons */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <Button
-                variant="google"
+                variant="gradient"
                 onClick={() =>
                   signIn("google", {
                     callbackUrl: "/",
@@ -159,18 +159,6 @@ export default function LoginPage() {
                   />
                 </svg>
                 Google
-              </Button>
-              <Button
-                variant="github"
-                onClick={() =>
-                  signIn("github", {
-                    callbackUrl: "/",
-                  })
-                }
-                className="w-full cursor-pointer"
-              >
-                <Github className="w-5 h-5 mr-2" />
-                GitHub
               </Button>
             </div>
 

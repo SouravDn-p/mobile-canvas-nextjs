@@ -12,6 +12,7 @@ const nextConfig = {
       "i.ibb.co",
       "avatars.githubusercontent.com",
       "ui-avatars.com",
+      "res.cloudinary.com",
     ],
   },
 };

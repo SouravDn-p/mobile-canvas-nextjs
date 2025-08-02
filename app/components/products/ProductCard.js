@@ -193,19 +193,21 @@ export default function ProductCard({ product }) {
           </div>
 
           {/* Dynamic Wishlist Button */}
-          <button
-            onClick={handleWishlistToggle}
-            disabled={isUpdating || !email}
-            className={`absolute top-4 right-4 p-2 cursor-pointer backdrop-blur-sm rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${
-              isInWishlist
-                ? "bg-red-500/80 text-white hover:bg-red-600/80"
-                : "bg-black/50 text-white hover:bg-purple-500/50"
-            } ${isUpdating ? "animate-pulse" : ""}`}
-          >
-            <Heart
-              className={`h-4 w-4 ${isInWishlist ? "fill-current" : ""}`}
-            />
-          </button>
+          {email && (
+            <button
+              onClick={handleWishlistToggle}
+              disabled={isUpdating || !email}
+              className={`absolute top-4 right-4 p-2 cursor-pointer backdrop-blur-sm rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${
+                isInWishlist
+                  ? "bg-red-500/80 text-white hover:bg-red-600/80"
+                  : "bg-black/50 text-white hover:bg-purple-500/50"
+              } ${isUpdating ? "animate-pulse" : ""}`}
+            >
+              <Heart
+                className={`h-4 w-4 ${isInWishlist ? "fill-current" : ""}`}
+              />
+            </button>
+          )}
 
           {/* Quick Actions - Visible on Hover */}
           <div className="absolute bottom-4 left-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-4 group-hover:translate-y-0">
@@ -297,7 +299,11 @@ export default function ProductCard({ product }) {
               }`}
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
-              {isUpdating ? "Adding..." : "Add to Cart"}
+              {email
+                ? isUpdating
+                  ? "Adding..."
+                  : "Add to Cart"
+                : "Login to Add"}
             </Button>
           </div>
         </div>

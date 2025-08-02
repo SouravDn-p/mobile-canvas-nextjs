@@ -2,16 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  Package,
-  Eye,
-  EyeOff,
-  Mail,
-  Lock,
-  User,
-  Github,
-  Check,
-} from "lucide-react";
+import { Package, Eye, EyeOff, Mail, Lock, User, Check } from "lucide-react";
 import { useRegisterUserMutation } from "@/redux/api/productapi";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
@@ -57,7 +48,13 @@ export default function RegisterPage() {
     const { firstName, lastName, email, password, confirmPassword } = formData;
 
     if (password !== confirmPassword) {
-      alert("Passwords do not match.");
+      Swal.fire({
+        title: "Error!",
+        text: "Passwords do not match.",
+        icon: "error",
+        showConfirmButton: false,
+        timer: 2000,
+      });
       return;
     }
 
@@ -204,9 +201,9 @@ export default function RegisterPage() {
 
           <CardContent className="space-y-6">
             {/* Social Sign Up Buttons */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <Button
-                variant="google"
+                variant="gradient"
                 onClick={() =>
                   signIn("google", {
                     callbackUrl: "/",
@@ -234,27 +231,13 @@ export default function RegisterPage() {
                 </svg>
                 Google
               </Button>
-
-              <Button
-                variant="github"
-                onClick={() =>
-                  signIn("github", {
-                    callbackUrl: "/",
-                  })
-                }
-                className="w-full cursor-pointer"
-              >
-                <Github className="w-5 h-5 mr-2 " />
-                GitHub
-              </Button>
             </div>
-
             <Separator />
 
             {/* Registration Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Name Fields */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First name</Label>
                   <div className="relative">

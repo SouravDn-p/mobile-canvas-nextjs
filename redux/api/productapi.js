@@ -140,10 +140,14 @@ export const {
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
+
+  // Auth hooks
   useRegisterUserMutation,
   useGetAllUsersQuery,
   useGetUserByEmailQuery,
   useUpdateUserMutation,
+
+  // Order hooks
   useGetOrdersQuery,
   useGetOrderByIdQuery,
   useUpdateOrderMutation,

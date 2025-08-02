@@ -4,7 +4,7 @@ import { getToken } from "next-auth/jwt";
 const adminOnlyRegex = [
   /^\/products\/add$/,
   /^\/products\/edit\/[^/]+$/,
-  /^\/admin\/products(\/.*)?$/,
+  /^\/admin(\/.*)?$/,
 ];
 const authRequiredRegex = [
   /^\/dashboard(\/.*)?$/,
@@ -37,6 +37,7 @@ export const config = {
     "/profile/:path*",
     "/products/add",
     "/products/edit/:path*",
+    "/admin",
     "/admin/:path*",
   ],
 };

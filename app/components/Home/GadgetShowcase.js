@@ -63,7 +63,7 @@ const showcaseProducts = [
   {
     id: "5",
     name: "Apple Watch",
-    category: "Wearable",
+    category: "Accessories",
     price: 399,
     image: "https://images.pexels.com/photos/437037/pexels-photo-437037.jpeg",
     icon: Watch,

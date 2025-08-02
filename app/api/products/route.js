@@ -62,7 +62,11 @@ export async function POST(request) {
       status,
       features,
       specifications,
+      trending,
+      isOnSale,
+      originalPrice,
       images,
+      image
     } = body;
 
     if (!name || !description || !price) {
@@ -80,18 +84,22 @@ export async function POST(request) {
       name,
       description,
       category,
-      price,
+      price: parseFloat(price),
       stock,
       sku,
       supplier,
       status,
-      specifications,
-      images,
-      features,
-      rating: 4.5 || 0,
+      specifications: Array.isArray(specifications) ? specifications : [],
+      originalPrice: originalPrice ? parseFloat(originalPrice) : null,
+      trending,
+      isOnSale,
+      images: Array.isArray(images) ? images : [],
+      features: Array.isArray(features) ? features : [],
+      rating: 4.5,
       reviews: [],
-      price: parseFloat(price),
+      sales: 0,
       dateAdded: new Date().toISOString(),
+      image
     });
 
     return NextResponse.json({

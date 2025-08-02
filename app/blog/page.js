@@ -63,7 +63,7 @@ const BlogPage = () => {
 
   const blogs = blogsData?.blogs || [];
   const filteredBlogs = blogs.filter((blog) => {
-    if (selectedCategory && blog.category !== selectedCategory) return false; 
+    if (selectedCategory && blog.category !== selectedCategory) return false;
     if (debouncedSearchTerm) {
       const searchLower = debouncedSearchTerm.toLowerCase();
       return (
@@ -72,10 +72,9 @@ const BlogPage = () => {
         blog.author.toLowerCase().includes(searchLower)
       );
     }
-    return true; 
+    return true;
   });
   const pagination = blogsData?.pagination || {};
-
 
   const categories = [
     "Gaming",
@@ -373,7 +372,7 @@ const BlogPage = () => {
                       </span>
                       {searchTerm && (
                         <span className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full flex items-center">
-                          Search: "{searchTerm}"
+                          Search: &quot;{searchTerm}&quot;
                           <button
                             onClick={() => setSearchTerm("")}
                             className="ml-1 hover:text-blue-200"
@@ -404,7 +403,8 @@ const BlogPage = () => {
           {filteredBlogs.length > 0 && (
             <div className="flex items-center justify-between text-sm text-gray-400">
               <span>
-                Showing {filteredBlogs.length} of {pagination.total || 0} filteredBlogs
+                Showing {filteredBlogs.length} of {pagination.total || 0}{" "}
+                filteredBlogs
                 {searchTerm && ` for "${searchTerm}"`}
                 {selectedCategory && ` in ${selectedCategory}`}
               </span>
