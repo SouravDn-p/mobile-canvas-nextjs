@@ -56,13 +56,14 @@ export async function PUT(req, context) {
 
     // Basic user profile
     if (body.name) updateFields.name = body.name;
+    if (body.image) updateFields.image = body.image;
     if (body.phone) updateFields.phone = body.phone;
     if (body.bio) updateFields.bio = body.bio;
     if (body.department) updateFields.department = body.department;
     if (body.location) updateFields.location = body.location;
     if (body.website) updateFields.website = body.website;
-    if (body.shippingAddress) updateFields.shippingAddress = body.shippingAddress;
-
+    if (body.shippingAddress)
+      updateFields.shippingAddress = body.shippingAddress;
 
     // Cart & Wishlist
     if (body.cart) updateFields.cart = body.cart;

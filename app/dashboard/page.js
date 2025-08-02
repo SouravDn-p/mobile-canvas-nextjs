@@ -37,18 +37,17 @@ import WishlistTab from "../components/dashboard/WishlistTab";
 import SettingTab from "../components/dashboard/SettingTab";
 import ProfileTab from "../components/dashboard/ProfileTab";
 import Link from "next/link";
-import {
-  useGetOrdersByEmailQuery,
-} from "@/redux/api/productapi";
+import { useGetOrdersByEmailQuery } from "@/redux/api/productapi";
 import OrderCard from "../components/order/OrderCard";
 
 const Tabs = ({ children, defaultValue, className = "" }) => {
   const [activeTab, setActiveTab] = React.useState(defaultValue);
+
   return (
     <div className={className} data-active-tab={activeTab}>
-      {React.Children.map(children, (child) =>
-        React.cloneElement(child, { activeTab, setActiveTab })
-      )}
+      {React.Children.toArray(children)
+        .filter((child) => child != null) // Filter out null or undefined children
+        .map((child) => React.cloneElement(child, { activeTab, setActiveTab }))}
     </div>
   );
 };
@@ -57,9 +56,9 @@ const TabsList = ({ children, className = "", activeTab, setActiveTab }) => (
   <div
     className={`flex space-x-1 p-1 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-xl ${className}`}
   >
-    {React.Children.map(children, (child) =>
-      React.cloneElement(child, { activeTab, setActiveTab })
-    )}
+    {React.Children.toArray(children)
+      .filter((child) => child != null)
+      .map((child) => React.cloneElement(child, { activeTab, setActiveTab }))}
   </div>
 );
 
@@ -127,36 +126,6 @@ export default function DashboardPage() {
   if (!session?.user) {
     return null;
   }
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case "delivered":
-        return <CheckCircle className="h-4 w-4 text-green-400" />;
-      case "shipped":
-        return <Truck className="h-4 w-4 text-blue-400" />;
-      case "processing":
-        return <Clock className="h-4 w-4 text-yellow-400" />;
-      case "cancelled":
-        return <XCircle className="h-4 w-4 text-red-400" />;
-      default:
-        return <Clock className="h-4 w-4 text-gray-400" />;
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "delivered":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
-      case "shipped":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
-      case "processing":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-      case "cancelled":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">

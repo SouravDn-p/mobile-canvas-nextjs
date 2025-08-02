@@ -323,7 +323,6 @@ export default function AddProductPage() {
       // Filter out empty features
       const filteredFeatures =
         data.features?.filter((feature) => feature) || [];
-      console.log(images);
       const productData = {
         ...data,
         price: Number(data.price),
@@ -404,7 +403,6 @@ export default function AddProductPage() {
         }));
       setImages((prev) => [...prev, ...newImages]);
       setCloudinaryUrls((prev) => [...prev, ...uploadedUrls]);
-      console.log("Uploaded URLs:", uploadedUrls);
     } catch (error) {
       console.error("Upload error:", error);
       Swal.fire({

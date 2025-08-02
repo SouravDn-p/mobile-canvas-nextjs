@@ -92,7 +92,6 @@ export default function AdminPage() {
   const { data: productData } = useGetProductsQuery();
   const { data: userData } = useGetAllUsersQuery();
   const productsData = productData?.data;
-  console.log("Order Data:", productsData?.length);
 
   const router = useRouter();
 

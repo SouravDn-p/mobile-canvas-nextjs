@@ -12,7 +12,6 @@ export async function GET(req, { params }) {
   }
 
   const { id } = params;
-  console.log("Fetching order by ID:", id);
 
   if (!ObjectId.isValid(id)) {
     return NextResponse.json({ error: "Invalid order ID" }, { status: 400 });
@@ -44,7 +43,6 @@ export async function GET(req, { params }) {
 // PUT /api/orders/[id]/route.js
 export async function PUT(req, { params }) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-  console.log(req);
 
   // 🔒 Admin check
   if (!token || token.role !== "admin") {
@@ -82,9 +80,6 @@ export async function PUT(req, { params }) {
     const result = await db
       .collection("Orders")
       .updateOne({ _id: new ObjectId(id) }, { $set: updateData });
-
-    console.log("MongoDB Update Result:", result); // 🐞 Debug log
-    console.log(result);
 
     if (result.matchedCount === 0) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });

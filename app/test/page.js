@@ -36,7 +36,6 @@ const UploadPage = () => {
     });
 
     try {
-      // Cloudinary-তে ফাইল আপলোড
       const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
@@ -49,20 +48,17 @@ const UploadPage = () => {
       const data = await res.json();
       const uploadedUrls = data.urls;
 
-      // নতুন ছবিগুলোর জন্য অবজেক্ট তৈরি করা
       const newImages = files
-        .filter((file) => file.size <= 10 * 1024 * 1024) // শুধু বৈধ ফাইল
+        .filter((file) => file.size <= 10 * 1024 * 1024)
         .map((file, index) => ({
           id: Date.now() + Math.random(),
-          url: uploadedUrls[index], // Cloudinary থেকে URL
+          url: uploadedUrls[index],
           file: file,
           name: file.name,
         }));
 
-      // images স্টেট আপডেট
       setImages((prev) => [...prev, ...newImages]);
       setCloudinaryUrls((prev) => [...prev, ...uploadedUrls]);
-      console.log("Uploaded URLs:", uploadedUrls);
     } catch (error) {
       console.error("Upload error:", error);
       Swal.fire({

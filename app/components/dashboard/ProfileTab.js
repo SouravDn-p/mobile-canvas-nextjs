@@ -40,7 +40,9 @@ const ProfileTab = () => {
     joinDate: "2023-01-15",
     avatar:
       session?.user?.image ||
-      "https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg",
+      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+       session?.user?.name ||  "User"
+      )}&background=random`,
   });
   useEffect(() => {
     if (status === "unauthenticated") {

@@ -14,7 +14,7 @@ import {
 import { Search, ChevronLeft, ChevronRight, DollarSign } from "lucide-react";
 import { useGetProductsQuery } from "@/redux/api/productapi";
 import Link from "next/link";
-import Loading from "../admin/products/loading";
+import Loading from "./loading";
 
 const categories = [
   "All",
@@ -62,7 +62,7 @@ export default function ProductsPage() {
     );
 
   const filteredProducts = allProducts
-    .filter((product) => {
+    ?.filter((product) => {
       const matchesSearch = product.name
         .toLowerCase()
         .includes(searchTerm.toLowerCase());
@@ -87,10 +87,10 @@ export default function ProductsPage() {
     });
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+  const totalPages = Math.ceil(filteredProducts?.length / PRODUCTS_PER_PAGE);
   const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
   const endIndex = startIndex + PRODUCTS_PER_PAGE;
-  const currentProducts = filteredProducts.slice(startIndex, endIndex);
+  const currentProducts = filteredProducts?.slice(startIndex, endIndex);
 
   // Reset to first page when filters change
 
@@ -143,7 +143,7 @@ export default function ProductsPage() {
 
               {/* Category Filter */}
               <div className="md:flex md:flex-wrap md:gap-2  grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-                {categories.map((category) => (
+                {categories?.map((category) => (
                   <Button
                     key={category}
                     variant={
@@ -281,11 +281,11 @@ export default function ProductsPage() {
           <p className="text-gray-400">
             Showing{" "}
             <span className="text-purple-400 font-semibold">
-              {startIndex + 1}-{Math.min(endIndex, filteredProducts.length)}
+              {startIndex + 1}-{Math.min(endIndex, filteredProducts?.length)}
             </span>{" "}
             of{" "}
             <span className="text-cyan-400 font-semibold">
-              {filteredProducts.length}
+              {filteredProducts?.length}
             </span>{" "}
             products
           </p>
@@ -301,7 +301,7 @@ export default function ProductsPage() {
         <div
           className={`grid gap-8 mb-12 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`}
         >
-          {currentProducts.map((product) => (
+          {currentProducts?.map((product) => (
             <ProductCard key={product._id} product={product} />
           ))}
         </div>
@@ -317,19 +317,21 @@ export default function ProductsPage() {
               <ChevronLeft className="h-5 w-5" />
             </button>
 
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`px-4 py-2 rounded-lg transition-all duration-300 cursor-pointer ${
-                  currentPage === page
-                    ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white"
-                    : "text-gray-400 hover:text-white hover:bg-gray-700/50"
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+            {Array.from({ length: totalPages }, (_, i) => i + 1)?.map(
+              (page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 cursor-pointer ${
+                    currentPage === page
+                      ? "bg-gradient-to-r from-purple-500 to-cyan-500 text-white"
+                      : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            )}
 
             <button
               onClick={() => handlePageChange(currentPage + 1)}
@@ -342,7 +344,7 @@ export default function ProductsPage() {
         )}
 
         {/* No Results */}
-        {filteredProducts.length === 0 && (
+        {filteredProducts?.length === 0 && (
           <div className="relative group">
             <div className="absolute inset-0 bg-gradient-to-r from-purple-600/10 to-cyan-600/10 rounded-2xl blur-xl opacity-50"></div>
             <div className="relative text-center py-16 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl">

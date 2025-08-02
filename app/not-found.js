@@ -1,22 +1,17 @@
-"use client";
 import React from "react";
-import { Home, ArrowLeft, Search } from "lucide-react";
-import Link from "next/link";
-
+import Image from "@/public/logos/hero1.png";
 const NotFoundPage = () => {
   return (
     <div className="min-h-screen bg-gray-900 relative overflow-hidden">
-      {/* Background Image with Overlay */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('https://images.pexels.com/photos/1089438/pexels-photo-1089438.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop')`,
+          backgroundImage: Image,
         }}
       >
         <div className="absolute inset-0 bg-gray-900/80 backdrop-blur-sm"></div>
       </div>
 
-      {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
@@ -48,24 +43,6 @@ const NotFoundPage = () => {
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href={"/"}>
-              <button className="group bg-gradient-to-r cursor-pointer from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 flex items-center space-x-3">
-                <Home className="h-5 w-5 group-hover:rotate-12 transition-transform duration-300" />
-                <span>Back to Home</span>
-              </button>
-            </Link>
-
-            <button
-              onClick={() => window.history.back()}
-              className="group cursor-pointer bg-white/10 hover:bg-white/20 backdrop-blur-md text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 border border-white/20 hover:border-white/30 flex items-center space-x-3"
-            >
-              <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform duration-300" />
-              <span>Go Back</span>
-            </button>
-          </div>
-
           {/* Decorative Elements */}
           <div className="mt-16 flex justify-center space-x-8 opacity-30">
             <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
@@ -82,10 +59,10 @@ const NotFoundPage = () => {
             key={i}
             className="absolute w-1 h-1 bg-white/20 rounded-full animate-pulse"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 2}s`,
+              left: "42.3%",
+              top: "67.8%",
+              animationDelay: "1.2s",
+              animationDuration: "3.5s",
             }}
           />
         ))}

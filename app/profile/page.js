@@ -134,21 +134,6 @@ export default function ProfilePage() {
     }
   }, [userData, reset]);
 
-  const getPaymentStatusColor = (status) => {
-    switch (status) {
-      case "paid":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
-      case "pending":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-      case "failed":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
-      case "refunded":
-        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-    }
-  };
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -156,7 +141,10 @@ export default function ProfilePage() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setProfileImagePreview(reader.result);
+        setProfileImage(reader.result);
+        console.log(reader.result);
       };
+      console.log("profileImage:", reader.result);
       reader.readAsDataURL(file);
     }
   };
@@ -165,6 +153,9 @@ export default function ProfilePage() {
     if (!email) return;
 
     try {
+      if (profileImage) {
+        formData.image = profileImage;
+      }
       await updateUser({
         email,
         data: formData,

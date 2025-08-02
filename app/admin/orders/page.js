@@ -306,7 +306,6 @@ const AdminOrdersPage = () => {
   };
 
   const handleStatusChange = async (orderId, newStatus, newPaymentStatus) => {
-    console.log(orderId, newStatus, newPaymentStatus);
     try {
       await updateOrder({
         id: orderId,
@@ -317,7 +316,6 @@ const AdminOrdersPage = () => {
         },
       }).unwrap();
       await refetch();
-      console.log("Order updated");
     } catch (err) {
       console.error("Update failed:", err);
     }
@@ -750,12 +748,12 @@ const AdminOrdersPage = () => {
                                   {item.name || "Unknown Product"}
                                 </p>
                                 <p className="text-xs text-gray-400">
-                                  Qty: {item.quantity || 1} x ৳ {" "}
+                                  Qty: {item.quantity || 1} x ৳{" "}
                                   {(item.price || 0).toFixed(2)}
                                 </p>
                               </div>
                               <span className="text-white font-medium text-sm">
-                                ৳ 
+                                ৳
                                 {(
                                   (item.price || 0) * (item.quantity || 1)
                                 ).toFixed(2)}
