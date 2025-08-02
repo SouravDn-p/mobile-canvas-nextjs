@@ -13,6 +13,8 @@ const nextConfig = {
       "avatars.githubusercontent.com",
       "ui-avatars.com",
       "res.cloudinary.com",
+      "api.dicebear.com",
+      "robohash.org",
     ],
   },
 };

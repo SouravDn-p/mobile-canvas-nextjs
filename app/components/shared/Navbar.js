@@ -254,8 +254,9 @@ export default function Navbar() {
                       <Image
                         src={
                           session?.user?.image ||
-                          "https://i.ibb.co/Y75m1Mk9/Final-Boss.jpg" ||
-                          "/placeholder.svg"
+                          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                            session?.user?.name || "User"
+                          )}&background=random`
                         }
                         alt="Profile"
                         width={36}

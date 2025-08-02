@@ -25,6 +25,8 @@ export async function POST(req) {
       name: user.name,
       email: user.email,
       role: user.role,
+      
+      // Use a default image if user.image is not set
     },
     process.env.JWT_SECRET,
     { expiresIn: "7d" }

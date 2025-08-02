@@ -49,7 +49,7 @@ export default function LoginPage() {
       });
 
       // Redirect to home or dashboard
-      router.push("/dashboard");
+      router.push("/");
     } catch (err) {
       alert(err?.data?.error || "Login failed");
     }
@@ -65,8 +65,13 @@ export default function LoginPage() {
             className=" rounded-2xl shadow-lg p-8 max-w-md w-full text-center"
           >
             <Image
-              src={session?.user?.image || "/default-avatar.png"}
-              alt="Profile"
+              src={
+                session?.user?.image ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                  session?.user?.name || "User"
+                )}&background=random`
+              }
+              alt={session?.user?.name}
               width={96}
               height={96}
               className="mx-auto rounded-full shadow mb-4"

@@ -27,6 +27,12 @@ export async function POST(req) {
     email,
     password: hashedPassword,
     role: "user",
+    image: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+      name
+    )}&background=random`,
+    cart: [],
+    wishlist: [],
+    shippingAddress: {},
     createdAt: new Date(),
   });
 

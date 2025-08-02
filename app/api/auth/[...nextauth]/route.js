@@ -38,7 +38,11 @@ export const authOptions = {
           name: user.name,
           email: user.email,
           role: user.role || "user",
-          image: user.image || null,
+          image:
+            user.image ||
+            `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
+              session?.user?.name || "User"
+            )}`,
         };
       },
     }),
