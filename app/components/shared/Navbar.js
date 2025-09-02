@@ -230,8 +230,8 @@ export default function Navbar() {
                 </Link>
                 <Link href="/register">
                   <button className="relative flex items-center cursor-pointer space-x-2 px-4 py-2 rounded-xl transition-all duration-300 group overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:from-blue-700 group-hover:to-purple-700 transition-all duration-300" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-purple-600/80 blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:from-blue-700 group-hover:to-purple-700 transition-all duration-300 rounded-xl" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-purple-600/80 blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300 rounded-xl" />
                     <UserPlus className="h-4 w-4 relative z-10 text-white" />
                     <span className="relative z-10 text-white font-medium">
                       Register
@@ -380,11 +380,15 @@ export default function Navbar() {
                     </Link>
                     <Link
                       href="/register"
-                      className="flex items-center cursor-pointer space-x-3 px-3 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 rounded-xl transition-all duration-300 mt-2 shadow-lg"
+                      className="flex items-center cursor-pointer space-x-3 px-3 py-3 rounded-xl transition-all duration-300 mt-2 shadow-lg overflow-hidden relative"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <UserPlus className="h-5 w-5" />
-                      <span>Register</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:from-blue-700 group-hover:to-purple-700 transition-all duration-300 rounded-xl" />
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-600/80 to-purple-600/80 blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-300 rounded-xl" />
+                      <UserPlus className="h-5 w-5 relative z-10 text-white" />
+                      <span className="relative z-10 text-white font-medium">
+                        Register
+                      </span>
                     </Link>
                   </>
                 ) : (
